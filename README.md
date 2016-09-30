@@ -124,7 +124,7 @@ public class DemoController {
 ### 2. 注解 @com.cpj.swagger.annotation.API
 该注解放在一个方法上面，用来表明方法是HTTP接口方法，注解的属性说明如下：
 #### `value`
-与注解[`@com.cpj.swagger.annotation.APIs`](#1-注解-@com.cpj.swagger.annotation.APIs)的`value`属性一起来指定接口的地址，例如有如下设置：
+与注解[`@com.cpj.swagger.annotation.APIs`](#1-注解-@com.cpj.swagger.annotation.apis)的`value`属性一起来指定接口的地址，例如有如下设置：
 ```java
 @APIs("/demo")
 public class DemoController {
@@ -148,7 +148,7 @@ public class DemoController {
 允许的请求MIME，比如：multipart/form-data、application/xml、application/json默认是application/json; charset=utf-8。
 </br>特别说明：</br>
 当为 `multipart/form-data` 时，[`Param`](#3-注解 @com.cpj.swagger.annotation.Param)
-的[`in`](#in)属性必须为`formData`，但是in()为path、header时[`Param`](#3-注解-@com.cpj.swagger.annotation.Param)不用遵循此规则。
+的[`in`](#in)属性必须为`formData`，但是[`in`](#in)为path、header时[`Param`](#3-注解-@com.cpj.swagger.annotation.param)不用遵循此规则。
 ### 3. 注解 @com.cpj.swagger.annotation.Param
 用来说明请求参数，例如：
 ```java
