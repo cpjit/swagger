@@ -10,7 +10,7 @@
 [`六. 示例程序下载`](#六-示例程序下载)<br />
 
 ## 一. 加入依赖JAR文件
-* 增加依赖配置：
+* maven：
 ```xml
 <dependency>
 	<groupId>com.github.3cpj</groupId>
