@@ -7,6 +7,7 @@
 [`三. 标注你的接口`](#三-标注你的接口)<br />
 [`四. 访问接口文档`](#四-访问接口文档)<br />
 [`五. 核心API`](#五-核心api)<br />
+[`六. 示例程序下载`](#六-示例程序下载)<br />
 
 ## 一. 加入依赖JAR文件
 * 增加依赖配置：
@@ -145,9 +146,9 @@ public class DemoController {
 #### `consumes`
 
 允许的请求MIME，比如：multipart/form-data、application/xml、application/json默认是application/json; charset=utf-8。
-<p>特别说明：</p>
-	当为 `multipart/form-data` 时，[`Param`](#3-注解 @com.cpj.swagger.annotation.Param)
-	的[`in`](#in)属性必须为`formData`，但是in()为path、header时[`Param`](#3-注解-@com.cpj.swagger.annotation.Param)不用遵循此规则。
+>特别说明：</br>
+当为 `multipart/form-data` 时，[`Param`](#3-注解 @com.cpj.swagger.annotation.Param)
+的[`in`](#in)属性必须为`formData`，但是in()为path、header时[`Param`](#3-注解-@com.cpj.swagger.annotation.Param)不用遵循此规则。
 ### 3. 注解 @com.cpj.swagger.annotation.Param
 用来说明请求参数，例如：
 ```java
@@ -263,3 +264,8 @@ public void login(HttpServletResponse response, String username, String password
 参数说明
 #### `required`
 是否是必须参数， 默认是false
+
+##六. 示例程序下载
+[`spring mvc`](https://github.com/3cpj/swagger-demo-springmvc) <br />
+[`struts2`](https://github.com/3cpj/swagger-demo-struts2) <br />
+[`servlet`](https://github.com/3cpj/swagger-demo-servlet)
