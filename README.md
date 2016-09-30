@@ -146,7 +146,7 @@ public class DemoController {
 #### `consumes`
 
 允许的请求MIME，比如：multipart/form-data、application/xml、application/json默认是application/json; charset=utf-8。
->特别说明：</br>
+</br>特别说明：</br>
 当为 `multipart/form-data` 时，[`Param`](#3-注解 @com.cpj.swagger.annotation.Param)
 的[`in`](#in)属性必须为`formData`，但是in()为path、header时[`Param`](#3-注解-@com.cpj.swagger.annotation.Param)不用遵循此规则。
 ### 3. 注解 @com.cpj.swagger.annotation.Param
