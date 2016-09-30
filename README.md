@@ -82,7 +82,7 @@ devMode=true
 </table>
 
 ## 三. 标注你的接口
-接下来需要用cpj-swagger提供的注解来标明你的接口，下面以spring mvc为例来说明如何标注接口，其他方式请参考[`示例程序`](#四-示例程序)。
+接下来需要用cpj-swagger提供的注解来标明你的接口，下面以spring mvc为例来说明如何标注接口，其他方式请参考[`示例程序`](#六-示例程序下载)。
 ```java
 @Controller
 @APIs("/demo")
