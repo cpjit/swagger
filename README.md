@@ -122,7 +122,7 @@ public class DemoController {
 ```
 ### 2. 注解 @com.cpj.swagger.annotation.API
 该注解放在一个方法上面，用来表明方法是HTTP接口方法，注解的属性说明如下：
-#### value
+#### `value`
 与注解[`@com.cpj.swagger.annotation.APIs`](#@com.cpj.swagger.annotation.apis)的`value`属性一起来指定接口的地址，例如有如下设置：
 ```java
 @APIs("/demo")
@@ -134,20 +134,20 @@ public class DemoController {
 ```
 那么`login`方法对应的接口地址为： youhost/demo/login
 
-#### parameters
-用来指定接口的请求参数，详情参见注解[`Param`](#3-注解 @com.cpj.swagger.annotation.param)的说明。
-#### summary
+#### `parameters`
+用来指定接口的请求参数，详情参见注解[`Param`](#3-注解-@com.cpj.swagger.annotation.param)的说明。
+#### `summary`
 接口功能简述。
-#### description
+#### `description`
 接口功能详细说明。
-#### method
+#### `method`
 请求方式，默认是POST。
 #### `consumes`
 
 允许的请求MIME，比如：multipart/form-data、application/xml、application/json默认是application/json; charset=utf-8。
 <p>特别说明：</p>
 	当为 `multipart/form-data` 时，[`Param`](#3-注解 @com.cpj.swagger.annotation.Param)
-	的[`in`](#in)属性必须为`formData`，但是in()为path、header时[`Param`](#3-注解 @com.cpj.swagger.annotation.Param)不用遵循此规则。
+	的[`in`](#in)属性必须为`formData`，但是in()为path、header时[`Param`](#3-注解-@com.cpj.swagger.annotation.Param)不用遵循此规则。
 ### 3. 注解 @com.cpj.swagger.annotation.Param
 用来说明请求参数，例如：
 ```java
@@ -160,9 +160,9 @@ public void login(HttpServletResponse response, String username, String password
 ```
 这表明该接口需要两个请求参数，及`username`、`password`。
 注解`@com.cpj.swagger.annotation.Param`的属性说明如下：
-#### name
+#### `name`
 参数名
-#### in
+#### `in`
 输入参数类型，可取如下值：
 <ul>
   <li>query - 参数拼接到url中</li>
@@ -176,8 +176,8 @@ public void login(HttpServletResponse response, String username, String password
  <li>当前请求方式为POST的时候，默认值为formData</li>
  <li>请求方式为非POST的时候，默认值为query</li>
 </ul>
-#### type 
-数据类型, 与[`format`](#type)一起指定请求参数的数据类型。
+#### `type` 
+数据类型, 与[`format`](#format)一起指定请求参数的数据类型。
 	 `type` 和 `format` 的可选值如下：
 	   <table border="0" cellpadding="1" cellspacing="0">
 		<thead>
@@ -257,9 +257,9 @@ public void login(HttpServletResponse response, String username, String password
 		</tr>
 		</tbody>
 	 	</table>
-#### format
+#### `format`
 数据格式，[`type`](#type)一起指定请求参数的数据类型。
 #### description
 参数说明
-#### required
+#### `required`
 是否是必须参数， 默认是false
