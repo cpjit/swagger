@@ -30,10 +30,10 @@ public @interface API {
 	/** HTTP请求方式，默认是POST */
 	String method() default "POST";
 
-	/** RESTful接口功能简述 */
+	/** 接口功能简述 */
 	String summary() default "";
 
-	/** RESTful接口功能详细说明 */
+	/** 接口功能详细说明 */
 	String description() default "";
 
 	/** 操作ID, 默认与方法名相同 */
@@ -46,7 +46,7 @@ public @interface API {
 	 * <strong style="color: red;">注意：</strong>
 	 * <p>
 	 * 当为<b>multipart/form-data</b>时，{@link #Param}
-	 * 并且in()必须为formData，此时如果{@link #Param}
+	 * 的in()必须为formData，此时如果{@link #Param}
 	 * 的schema不为空或者不为空串，那么请求参数将被忽略。 但是in()为path、header的
 	 * {@link #Param}不用遵循此规则。
 	 * 
