@@ -113,7 +113,7 @@ http://127.0.0.1:8080/您的项目名/api/index
 
 ## 五. 核心API
 ### 1. 注解 @com.cpj.swagger.annotation.APIs
-该注解放在一个类上面，用来表明类中包含作为HTTP接口的方法（被注解[`@com.cpj.swagger.annotation.API`](#@com.cpj.swagger.annotation.api)标注了的方法）。
+该注解放在一个类上面，用来表明类中包含作为HTTP接口的方法（被注解[`@com.cpj.swagger.annotation.API`](#2-注解-@com.cpj.swagger.annotation.api)标注了的方法）。
 该注解的`value`用来设置接口的前缀，这和`struts2`的命名空间很像。使用示例如下：
 ```java
 @APIs("/demo")
@@ -124,7 +124,7 @@ public class DemoController {
 ### 2. 注解 @com.cpj.swagger.annotation.API
 该注解放在一个方法上面，用来表明方法是HTTP接口方法，注解的属性说明如下：
 #### `value`
-与注解[`@com.cpj.swagger.annotation.APIs`](#@com.cpj.swagger.annotation.apis)的`value`属性一起来指定接口的地址，例如有如下设置：
+与注解[`@com.cpj.swagger.annotation.APIs`](#1-注解-@com.cpj.swagger.annotation.APIs)的`value`属性一起来指定接口的地址，例如有如下设置：
 ```java
 @APIs("/demo")
 public class DemoController {
