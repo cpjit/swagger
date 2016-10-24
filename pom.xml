@@ -3,7 +3,7 @@
 	<groupId>com.github.3cpj</groupId>
 	<artifactId>cpj-swagger</artifactId>
 	<packaging>jar</packaging>
-	<version>1.2.1</version>
+	<version>1.2.2</version>
 	<name>cpj-swagger</name>
 	<description>cpj-swagger通过与swagger ui一起快速为您的web项目产生接口文档，并且支持在线测试接口。cpj-swagger可以很方便的与struts2、spring mvc、servlet集成使用</description>
 	<url>https://github.com/3cpj/swagger</url>
@@ -42,7 +42,7 @@
          scm:git:https://github.com/3cpj/swagger.git
       </developerConnection>
       	<url>https://github.com/3cpj/swagger</url>
-     	<tag>v1.2.0</tag>
+     	<tag>v1.2.2</tag>
 	  </scm>
   
 	<dependencies>
@@ -66,7 +66,7 @@
 		<dependency>
 			<groupId>com.github.3cpj</groupId>
 			<artifactId>cpj-common</artifactId>
-			<version>1.5.0</version>
+			<version>1.5.1</version>
 		</dependency>
 		
 		<dependency>

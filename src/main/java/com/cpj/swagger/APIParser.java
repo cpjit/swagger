@@ -12,9 +12,11 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -28,6 +30,7 @@ import com.cpj.swagger.annotation.APISchemas;
 import com.cpj.swagger.annotation.APITag;
 import com.cpj.swagger.annotation.APITags;
 import com.cpj.swagger.annotation.APIs;
+import com.cpj.swagger.annotation.DataType;
 import com.cpj.swagger.annotation.Item;
 import com.cpj.swagger.annotation.Items;
 import com.cpj.swagger.annotation.Param;
@@ -411,25 +414,33 @@ public final class APIParser implements APIParseable {
 				List<Map<String, Object>> parameters = new ArrayList<Map<String, Object>>(); // 请求参数
 	
 				/** 解析参数，优先使用schema */
-				for (Param rp : service.parameters()) {
+				for (Param requestParamAttrs : service.parameters()) {
 					Map<String, Object> parameter = new HashMap<String, Object>();
-					if (rp.schema() != null && !rp.schema().trim().equals("")) { // 处理复杂类型的参数
+					if (requestParamAttrs.schema() != null && !requestParamAttrs.schema().trim().equals("")) { // 处理复杂类型的参数
 						if (isMultipart) { // 当请求的Content-Type为multipart/form-data将忽略复杂类型的参数
 							throw new IllegalArgumentException(
 									"请求的Content-Type为multipart/form-data，将忽略复杂类型的请求参数[ "
-											+ rp.schema() + " ]");
+											+ requestParamAttrs.schema() + " ]");
 						}
 						parameter.put("in", "body");
 						parameter.put("name", "body");
 						Map<String, Object> $ = new HashMap<String, Object>();
-						$.put("$ref", "#/definitions/" + rp.schema());
+						$.put("$ref", "#/definitions/" + requestParamAttrs.schema());
 						parameter.put("schema", $);
 					} else { // 简单类型的参数
-						if (isMultipart && !"path".equals(rp.in()) && !"header".equals(rp.in())) { // 包含文件上传
+						String requestParamType, requestParamFormat;
+						if(requestParamAttrs.dataType() != DataType.UNKNOWN) { // since 1.2.2
+							requestParamType = requestParamAttrs.dataType().type();
+							requestParamFormat = requestParamAttrs.dataType().format();
+						} else {
+							requestParamType = requestParamAttrs.type();
+							requestParamFormat = requestParamAttrs.format();
+						}
+						if (isMultipart && !"path".equals(requestParamAttrs.in()) && !"header".equals(requestParamAttrs.in())) { // 包含文件上传
 							parameter.put("in", "formData");
-							parameter.put("type", rp.type());
+							parameter.put("type", requestParamType);
 						} else { // 不包含文件上传
-							String in = rp.in();
+							String in = requestParamAttrs.in();
 							if(TextUtil.isEmpty(in)) {
 								if("post".equalsIgnoreCase(service.method())) {
 									in = "formData";
@@ -438,23 +449,19 @@ public final class APIParser implements APIParseable {
 								}
 							}
 							parameter.put("in", in);
-							parameter.put("type", rp.type());
-							String format = rp.format();
-							if(TextUtil.isNotEmpty(format)) {
-								parameter.put("format", format);
+							parameter.put("type", requestParamType);
+							if(TextUtil.isNotEmpty(requestParamFormat)) {
+								parameter.put("format", requestParamFormat);
 							}
 						}
-						parameter.put("name", rp.name());
-						parameter.put("description", rp.description());
-						parameter.put("required", rp.required());
-						if (rp.items() != null && !rp.items().trim().equals("")) {
-							if (!rp.type().equals("array")) {
-								throw new IllegalArgumentException(
-										"请求参数 [ "
-												+ rp.name()
-												+ " ]存在可选值(items)的时候，请求参数类型(type)的值只能为array");
+						parameter.put("name", requestParamAttrs.name());
+						parameter.put("description", requestParamAttrs.description());
+						parameter.put("required", requestParamAttrs.required());
+						if (requestParamAttrs.items() != null && !requestParamAttrs.items().trim().equals("")) {
+							if (!requestParamType.equals("array")) {
+								throw new IllegalArgumentException("请求参数 [ "+ requestParamAttrs.name()+ " ]存在可选值(items)的时候，请求参数类型(type)的值只能为array");
 							}
-							Item item = items.get(rp.items().trim());
+							Item item = items.get(requestParamAttrs.items().trim());
 							if (item != null) { // 可选值
 	
 								Map<String, Object> i = new HashMap<String, Object>();
@@ -515,8 +522,19 @@ public final class APIParser implements APIParseable {
 	 * @throws Exception
 	 */
 	private List<Tag> parseTag() throws Exception {
-		List<Tag> tags = new ArrayList<Tag>();
+		Set<Tag> tags = new HashSet<Tag>();
 
+		/* since1.2.2 先扫描被@APITag标注了的类 */
+		for(APITag apiTag : scanAPIsAnnotations()) {
+			Tag tag = new Tag();
+			tag.setName(apiTag.value());
+			tag.setDescription(apiTag.description());
+			if(TextUtil.isNotEmpty(apiTag.description()) || !tags.contains(tag)) {
+				tags.add(tag);
+			} 
+		}
+		
+		/* 扫描package-info上面的@APITags */
 		for (Package pk : packages) {
 			APITags apiTags = pk.getAnnotation(APITags.class);
 			if (apiTags == null) {
@@ -531,7 +549,7 @@ public final class APIParser implements APIParseable {
 				tags.add(tag);
 			}
 		}
-		return tags;
+		return new ArrayList<>(tags);
 	}
 
 	/**
@@ -619,5 +637,20 @@ public final class APIParser implements APIParseable {
 			}
 		}
 		return api;
+	}
+	
+	/*
+	 * @since 1.2.2
+	 */
+	private List<APITag> scanAPIsAnnotations() throws Exception {
+		List<APITag> apiTags = new ArrayList<>();
+		List<Class<?>> clazzs = ReflectUtils.scanClazzs(packageToScan, true);
+		for(Class<?> clazz : clazzs) {
+			APITag annotation = clazz.getAnnotation(APITag.class);
+			if( annotation != null) {
+				apiTags.add(annotation);
+			}
+		}
+		return apiTags;
 	}
 }

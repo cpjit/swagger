@@ -121,15 +121,25 @@ public @interface Param {
 		</tr>
 		</tbody>
 	 	</table>
+	 * @deprecated 在版本1.2.2中被废弃，建议使用{@link Param#dataType()}替代。	
 	 * @see #type()
 	 **/
+	@Deprecated
 	String type() default "";
 	
 	/** 
 	 *  数据格式，与{@link #type()}一起指定请求参数的数据类型。
+	 *  @deprecated 在版本1.2.2中被废弃，建议使用{@link Param#dataType()}替代。
 	 *  @see #type()
 	 * */
+	@Deprecated
 	String format() default "";
+	
+	/**
+	 * 请求参数的数据类型和格式。
+	 * @since 1.2.2
+	 */
+	DataType dataType() default DataType.UNKNOWN;
 	
 	/** 参数说明 */
 	String description() default "";
