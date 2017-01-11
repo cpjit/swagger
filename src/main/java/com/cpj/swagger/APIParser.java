@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011, 2016 CPJ and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017 CPJ and/or its affiliates. All rights reserved.
  * 
  */
 package com.cpj.swagger;
@@ -370,9 +370,11 @@ public final class APIParser implements APIParseable {
 			for (Method method : apiMethods) {
 				API service = method.getAnnotation(API.class);
 				boolean isMultipart = hasMultipart(service);
-				String url = apis.value() + "/" + service.value() + suffix;
-				if(url.endsWith("/")) {
-					url = url.substring(0, url.length() - 1);
+				String url;
+				if("".equals(service.value())) {
+					url = apis.value() + suffix;
+				} else {
+					url = apis.value() + "/" + service.value() + suffix;
 				}
 				Map<String, Path> path = paths.get(url); // get/psot/put/delete
 				if (path == null) {

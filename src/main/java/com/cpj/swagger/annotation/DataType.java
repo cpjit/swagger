@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011, 2016 CPJ and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017 CPJ and/or its affiliates. All rights reserved.
  * 
  */
 package com.cpj.swagger.annotation;
@@ -26,7 +26,9 @@ public enum DataType {
 	/** base64编码的字符 */
 	BYTE("string", "byte"),
 	/** 任何的八位字节序列 */
-	BINARY("string", "binary"), BOOLEAN("boolean", null),
+	BINARY("string", "binary"), 
+	/** boolean类型 */
+	BOOLEAN("boolean", null),
 	/** 日期 */
 	DATE("string", "date"),
 	/** 日期和时间 */

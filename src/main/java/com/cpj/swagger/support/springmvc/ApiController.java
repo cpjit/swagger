@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011, 2015 CPJ and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017 CPJ and/or its affiliates. All rights reserved.
  * 
  */
 package com.cpj.swagger.support.springmvc;
@@ -11,6 +11,7 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -31,9 +32,10 @@ import com.cpj.swagger.support.internal.DefaultApiViewWriter;
 @Controller
 @RequestMapping("/api")
 @APIs("/api")
-public class ApiController  {
+public class ApiController implements InitializingBean {
 	
 	private ApiViewWriter apiViewWriter = new DefaultApiViewWriter();
+	private Properties props = new Properties();
 	
 	@RequestMapping(value = "index", method = RequestMethod.GET)
 	@API(value = "", summary = "获取API文档", method = "get", parameters = @Param(name = "lang", description = "语言（默认为中文）", type = "string", format = "string"))
@@ -41,9 +43,6 @@ public class ApiController  {
 		if(TextUtil.isEmpty(lang)) {
 			lang = "zh-cn";
 		}
-		Properties props = new Properties();
-		InputStream is = ResourceUtil.getResourceAsStream("swagger.properties");
-		props.load(is);
 		String suffix = props.getProperty("suffix");
 		if(TextUtil.isEmpty(suffix)) {
 			suffix = "";
@@ -75,6 +74,12 @@ public class ApiController  {
 	 */
 	@RequestMapping(value="statics/**", method=RequestMethod.GET)
 	public void queryStatic(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		apiViewWriter.writeStatic(request, response);
+		apiViewWriter.writeStatic(request, response, props);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		InputStream is = ResourceUtil.getResourceAsStream("swagger.properties");
+		props.load(is);
 	}
 }

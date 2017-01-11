@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011, 2016 CPJ and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017 CPJ and/or its affiliates. All rights reserved.
  * 
  */
 package com.cpj.swagger.support.servlet;
@@ -27,6 +27,17 @@ import com.cpj.swagger.support.internal.DefaultApiViewWriter;
 public class ApiServlet extends HttpServlet {
 	
 	private ApiViewWriter apiViewWriter = new DefaultApiViewWriter();
+	private Properties props = new Properties();
+	
+	@Override
+	public void init() throws ServletException {
+		InputStream is = ResourceUtil.getResourceAsStream("swagger.properties");
+		try {
+			props.load(is);
+		} catch (IOException ioe) {
+			throw new ServletException(ioe);
+		}
+	}
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -49,9 +60,7 @@ public class ApiServlet extends HttpServlet {
 		if(TextUtil.isEmpty(lang)) {
 			lang = "zh-cn";
 		}
-		Properties props = new Properties();
-		InputStream is = ResourceUtil.getResourceAsStream("swagger.properties");
-		props.load(is);
+		
 		String suffix = props.getProperty("suffix");
 		if(TextUtil.isEmpty(suffix)) {
 			suffix = "";
@@ -64,7 +73,7 @@ public class ApiServlet extends HttpServlet {
 	 * @since 1.2.0
 	 */
 	private void queryStatic(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		apiViewWriter.writeStatic(request, response);
+		apiViewWriter.writeStatic(request, response, props);
 	}
 	
 	private void queryApi(HttpServletRequest request, HttpServletResponse response) throws Exception {

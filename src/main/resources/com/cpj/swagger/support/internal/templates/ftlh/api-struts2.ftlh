@@ -3,27 +3,27 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <title>API  |  ${apiTitle }</title>
-  <link rel="icon" type="image/png" href="${basePath}staticsimge/icon.png" sizes="32x32" />
-  <link rel="icon" type="image/png" href="${basePath}staticsimge/icon.png" sizes="16x16" />
-  <link href='${basePath}api/statics?url=css/typography.css' media='screen' rel='stylesheet' type='text/css'/>
-  <link href='${basePath}api/statics?url=css/reset.css' media='screen' rel='stylesheet' type='text/css'/>
-  <link href='${basePath}api/statics?url=css/screen.css' media='screen' rel='stylesheet' type='text/css'/>
-  <link href='${basePath}api/statics?url=css/reset.css' media='print' rel='stylesheet' type='text/css'/>
-  <link href='${basePath}api/statics?url=css/print.css' media='print' rel='stylesheet' type='text/css'/>
+  <link rel="icon" type="image/png" href="${basePath}statics/imge/icon.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="${basePath}statics/imge/icon.png" sizes="16x16" />
+  <link href='${basePath}api/statics${suffix}?url=css/typography.css' media='screen' rel='stylesheet' type='text/css'/>
+  <link href='${basePath}api/statics${suffix}?url=css/reset.css' media='screen' rel='stylesheet' type='text/css'/>
+  <link href='${basePath}api/statics${suffix}?url=css/screen.css' media='screen' rel='stylesheet' type='text/css'/>
+  <link href='${basePath}api/statics${suffix}?url=css/reset.css' media='print' rel='stylesheet' type='text/css'/>
+  <link href='${basePath}api/statics${suffix}?url=css/print.css' media='print' rel='stylesheet' type='text/css'/>
   
-  <script src='${basePath}api/statics?url=lib/jquery-1.8.0.min.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lib/jquery.slideto.min.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lib/jquery.wiggle.min.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lib/jquery.ba-bbq.min.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lib/handlebars-2.0.0.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lib/underscore-min.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lib/backbone-min.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=swagger-ui.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lib/highlight.7.3.pack.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lib/marked.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lib/swagger-oauth.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lang/translator.js' type='text/javascript'></script>
-  <script src='${basePath}api/statics?url=lang/${lang}.js' type='text/javascript'></script> 
+  <script src='${basePath}api/statics${suffix}?url=lib/jquery-1.8.0.min.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lib/jquery.slideto.min.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lib/jquery.wiggle.min.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lib/jquery.ba-bbq.min.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lib/handlebars-2.0.0.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lib/underscore-min.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lib/backbone-min.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=swagger-ui.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lib/highlight.7.3.pack.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lib/marked.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lib/swagger-oauth.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lang/translator.js' type='text/javascript'></script>
+  <script src='${basePath}api/statics${suffix}?url=lang/${lang}.js' type='text/javascript'></script> 
   <script type="text/javascript">
     $(function () {
       //var url = window.location.search.match(/url=([^&]+)/);

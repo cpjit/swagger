@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011, 2016 CPJ and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017 CPJ and/or its affiliates. All rights reserved.
  * 
  */
 package com.cpj.swagger.annotation;
@@ -122,7 +122,8 @@ public @interface Param {
 		</tbody>
 	 	</table>
 	 * @deprecated 在版本1.2.2中被废弃，建议使用{@link Param#dataType()}替代。	
-	 * @see #type()
+	 * @see #format()
+	 * @see DataType
 	 **/
 	@Deprecated
 	String type() default "";
@@ -131,6 +132,7 @@ public @interface Param {
 	 *  数据格式，与{@link #type()}一起指定请求参数的数据类型。
 	 *  @deprecated 在版本1.2.2中被废弃，建议使用{@link Param#dataType()}替代。
 	 *  @see #type()
+	 *  @see DataType
 	 * */
 	@Deprecated
 	String format() default "";
@@ -144,7 +146,7 @@ public @interface Param {
 	/** 参数说明 */
 	String description() default "";
 
-	/** 是否必须 */
+	/** 是否必须，默认是false */
 	boolean required() default false;
 
 	/**

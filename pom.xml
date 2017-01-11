@@ -3,7 +3,7 @@
 	<groupId>com.github.3cpj</groupId>
 	<artifactId>cpj-swagger</artifactId>
 	<packaging>jar</packaging>
-	<version>1.2.2</version>
+	<version>1.2.2-SNAPSHOT</version>
 	<name>cpj-swagger</name>
 	<description>cpj-swagger通过与swagger ui一起快速为您的web项目产生接口文档，并且支持在线测试接口。cpj-swagger可以很方便的与struts2、spring mvc、servlet集成使用</description>
 	<url>https://github.com/3cpj/swagger</url>
@@ -103,7 +103,7 @@
 	            <plugin>
 	               <groupId>org.sonatype.plugins</groupId>
 	               <artifactId>nexus-staging-maven-plugin</artifactId>
-	               <version>1.6.3</version>
+	               <version>1.7.3</version>
 	               <extensions>true</extensions>
 	               <configuration>
 	                 <serverId>ossrh</serverId>
@@ -127,8 +127,8 @@
 	                <artifactId>maven-compiler-plugin</artifactId>
 	                <version>3.0</version>
 	                <configuration>
-	                    <source>1.6</source>
-	                    <target>1.6</target>
+	                    <source>1.7</source>
+	                    <target>1.7</target>
 	                </configuration>
 	            </plugin>
 	           <plugin>
@@ -145,7 +145,7 @@
 	                 </execution>
 	               </executions>
 	            </plugin>
-	           <plugin>
+	           <!-- <plugin>
 	                <groupId>org.apache.maven.plugins</groupId>
 	                <artifactId>maven-source-plugin</artifactId>
 	                <version>2.2.1</version>
@@ -157,8 +157,8 @@
 	                        </goals>
 	                    </execution>
 	                </executions>
-	            </plugin> 
-	            <plugin>
+	            </plugin>  -->
+	            <!-- <plugin>
 	                <groupId>org.apache.maven.plugins</groupId>
 	                <artifactId>maven-javadoc-plugin</artifactId>
 	                <version>2.10.4</version>
@@ -170,7 +170,7 @@
 	                        </goals>
 	                    </execution>
 	                </executions>
-	            </plugin>
+	            </plugin> -->
 	         </plugins>
 	    </build>
 	  </profile>
@@ -179,6 +179,15 @@
 		<finalName>cpj-swagger</finalName>
 		<defaultGoal>compile</defaultGoal>
 		<plugins>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>					
+					<classesDirectory>target/classes/</classesDirectory>
+					<archive>
+						<addMavenDescriptor>false</addMavenDescriptor>
+					</archive>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -224,7 +233,7 @@
 				</executions>
 			</plugin>
 			
-			<plugin>
+			<!-- <plugin>
 		      <groupId>org.apache.maven.plugins</groupId>
 		      <artifactId>maven-gpg-plugin</artifactId>
 		      <version>1.5</version>
@@ -237,7 +246,7 @@
 		          </goals>
 		        </execution>
 		      </executions>
-	    	</plugin>
+	    	</plugin> -->
 		</plugins>
 	</build>
 </project>

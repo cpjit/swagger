@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011, 2016 CPJ and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011, 2017 CPJ and/or its affiliates. All rights reserved.
  * 
  */
 package com.cpj.swagger.support.internal;
@@ -55,10 +55,11 @@ public class DefaultApiViewWriter implements ApiViewWriter {
 		if(TextUtil.isEmpty(suffix)) {
 			suffix = "";
 		}
-		root.put("getApisUrl","http://" + host + "/api/" + suffix);
+		root.put("getApisUrl","http://" + host + "/api" + suffix);
 		root.put("apiDescription", props.getProperty("apiDescription"));
 		root.put("apiTitle", props.getProperty("apiTitle"));
 		root.put("apiVersion", props.getProperty("apiVersion"));
+		root.put("suffix", suffix);
         Template template = FreemarkerUtils.getTemplate(getTemplateName());
         response.setContentType("text/html;charset=utf-8");
         Writer out = response.getWriter();
@@ -96,16 +97,31 @@ public class DefaultApiViewWriter implements ApiViewWriter {
 		}
 	}
 
-	protected String buildResourcePath (HttpServletRequest request) {
+	/**
+	 * @since 1.2.2
+	 */
+	protected String buildResourcePath(HttpServletRequest request, Properties config) {
 		String uri = request.getRequestURI();
+		String suffix = (String) config.get("suffix");
+		if(suffix != null) {
+			int index = uri.lastIndexOf(suffix);
+			if(index > 0) {
+				 uri = uri.substring(0, index);
+			}
+		}
 		String path = uri.substring(uri.indexOf("statics")+7);
 		path = "com/cpj/swagger/support/internal/statics"+path;
 		return path;
 	}
 	
+	@Deprecated
+	protected String buildResourcePath(HttpServletRequest request) {
+		return buildResourcePath(request, null);
+	}
+	
 	@Override
-	public void writeStatic(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		String path = buildResourcePath(request);
+	public void writeStatic(HttpServletRequest request, HttpServletResponse response, Properties props) throws IOException {
+		String path = buildResourcePath(request, props);
 		LOG.debug("获取web资源文件： " + path);
 		String contentType = FileTypeMap.getContentType(path);
 		response.setContentType(contentType);
@@ -139,5 +155,10 @@ public class DefaultApiViewWriter implements ApiViewWriter {
 			}
 		}
 	}
-
+	
+	@Deprecated
+	@Override
+	public void writeStatic(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		writeStatic(request, response, null);
+	}
 }
