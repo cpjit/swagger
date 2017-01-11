@@ -3,27 +3,28 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <title>API  |  ${apiTitle }</title>
-  <link rel="icon" type="image/png" href="${basePath}api/statics/imge/icon.png${suffix}" sizes="32x32" />
-  <link rel="icon" type="image/png" href="${basePath}api/statics/imge/icon.png${suffix}" sizes="16x16" />
+  
   <link href='${basePath}api/statics/css/typography.css${suffix}' media='screen' rel='stylesheet' type='text/css'/>
   <link href='${basePath}api/statics/css/reset.css${suffix}' media='screen' rel='stylesheet' type='text/css'/>
   <link href='${basePath}api/statics/css/screen.css${suffix}' media='screen' rel='stylesheet' type='text/css'/>
   <link href='${basePath}api/statics/css/reset.css${suffix}' media='print' rel='stylesheet' type='text/css'/>
   <link href='${basePath}api/statics/css/print.css${suffix}' media='print' rel='stylesheet' type='text/css'/>
-  
+  <script src='${basePath}api/statics/lib/object-assign-pollyfill.js${suffix}' type='text/javascript'></script>
   <script src='${basePath}api/statics/lib/jquery-1.8.0.min.js${suffix}' type='text/javascript'></script>
   <script src='${basePath}api/statics/lib/jquery.slideto.min.js${suffix}' type='text/javascript'></script>
   <script src='${basePath}api/statics/lib/jquery.wiggle.min.js${suffix}' type='text/javascript'></script>
   <script src='${basePath}api/statics/lib/jquery.ba-bbq.min.js${suffix}' type='text/javascript'></script>
-  <script src='${basePath}api/statics/lib/handlebars-2.0.0.js${suffix}' type='text/javascript'></script>
-  <script src='${basePath}api/statics/lib/underscore-min.js${suffix}' type='text/javascript'></script>
+  <script src='${basePath}api/statics/lib/handlebars-4.0.5.js${suffix}' type='text/javascript'></script>
+  <script src='${basePath}api/statics/lib/lodash.min.js${suffix}' type='text/javascript'></script>
   <script src='${basePath}api/statics/lib/backbone-min.js${suffix}' type='text/javascript'></script>
-  <script src='${basePath}api/statics/swagger-ui.js${suffix}' type='text/javascript'></script>
-  <script src='${basePath}api/statics/lib/highlight.7.3.pack.js${suffix}' type='text/javascript'></script>
+  <script src='${basePath}api/statics/swagger-ui.min.js${suffix}' type='text/javascript'></script>
+  <script src='${basePath}api/statics/lib/highlight.9.1.0.pack.js${suffix}' type='text/javascript'></script>
+  <script src='${basePath}api/statics/lib/highlight.9.1.0.pack_extended.js${suffix}' type='text/javascript'></script>
+  <script src='${basePath}api/statics/lib/jsoneditor.min.js${suffix}' type='text/javascript'></script>
   <script src='${basePath}api/statics/lib/marked.js${suffix}' type='text/javascript'></script>
-  <script src='${basePath}api/statics/lib/swagger-oauth.js${suffix}' type='text/javascript'></script>
-  <script src='${basePath}api/statics/lang/translator.js${suffix}' type='text/javascript'></script>
+  <script src='${basePath}api/statics/lang/translator.js${suffix}' type='text/javascript'></script> 
   <script src='${basePath}api/statics/lang/${lang}.js${suffix}' type='text/javascript'></script> 
+  
   <script type="text/javascript">
     $(function () {
       //var url = window.location.search.match(/url=([^&]+)/);
@@ -103,11 +104,11 @@
   <div class="swagger-ui-wrap">
     <a id="logo" href="#">${apiTitle }</a>
     
-    <!--<form id='api_selector'>
-      <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
-      <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>
+    <form id='api_selector'>
+      <div class='input'><input disabled placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" type="text"/></div>
+      <#-- <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div> -->
       <div class='input'><a id="explore" href="#" data-sw-translate>Explore</a></div>
-    </form>-->
+    </form>
     
   </div>
 </div>

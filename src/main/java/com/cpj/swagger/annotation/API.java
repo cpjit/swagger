@@ -59,4 +59,16 @@ public @interface API {
 
 	/** 请求参数 */
 	Param[] parameters() default {};
+	
+	/** 
+	 * 接口是否已经被废弃，默认是false。
+	 * @since 1.2.2
+	 */
+	boolean deprecated() default false;
+	
+	/**
+	 * 是否隐藏接口。
+	 * @since 1.2.2
+	 */
+	boolean hide() default false;
 }

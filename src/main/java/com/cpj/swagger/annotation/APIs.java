@@ -24,4 +24,10 @@ public @interface APIs {
 	 * 命名空间。
 	 */
 	String value() default "";
+	
+	/**
+	 * 是否隐藏命名空间。
+	 * @since 1.2.2
+	 */
+	boolean hide() default false;
 }

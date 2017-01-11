@@ -363,12 +363,15 @@ public final class APIParser implements APIParseable {
 		List<Class<?>> clazzs = ReflectUtils.scanClazzs(packageToScan, true); // 扫描包以获取包中的类
 		for(Class<?> clazz : clazzs) {
 			APIs apis = clazz.getAnnotation(APIs.class);
-			if(apis == null) {
+			if(apis == null || apis.hide()) {
 				continue;
 			}
 			List<Method> apiMethods = scanAPIMethod(clazz);
 			for (Method method : apiMethods) {
 				API service = method.getAnnotation(API.class);
+				if(service.hide()) {
+					continue;
+				}
 				boolean isMultipart = hasMultipart(service);
 				String url;
 				if("".equals(service.value())) {
@@ -413,8 +416,8 @@ public final class APIParser implements APIParseable {
 					p.setConsumes(Arrays.asList(service.consumes()));
 				}
 				p.setProduces(Arrays.asList(service.produces()));
+				p.setDeprecated(service.deprecated());
 				List<Map<String, Object>> parameters = new ArrayList<Map<String, Object>>(); // 请求参数
-	
 				/** 解析参数，优先使用schema */
 				for (Param requestParamAttrs : service.parameters()) {
 					Map<String, Object> parameter = new HashMap<String, Object>();

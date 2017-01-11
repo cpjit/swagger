@@ -21,7 +21,8 @@ class Path {
 	private List<String> consumes = new ArrayList<String>();
 	private List<String> produces = new ArrayList<String>();
 	private List<Map<String, Object>> parameters = new ArrayList<Map<String, Object>>();
-
+	private boolean deprecated;
+	
 	public String getSummary() {
 		return summary;
 	}
@@ -76,5 +77,18 @@ class Path {
 
 	public void setParameters(List<Map<String, Object>> parameters) {
 		this.parameters = parameters;
+	}
+	/**
+	 * 判断接口是否已经被废弃。
+	 * @since 1.2.2
+	 */
+	public boolean isDeprecated() {
+		return deprecated;
+	}
+	/**
+	 * @since 1.2.2
+	 */
+	public void setDeprecated(boolean deprecated) {
+		this.deprecated = deprecated;
 	}
 }
