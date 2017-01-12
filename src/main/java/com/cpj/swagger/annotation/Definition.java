@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 
 /**
  * @author yonghaun
- * @since 1.0.0.0
+ * @since 1.0.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
