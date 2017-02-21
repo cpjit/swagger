@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.3cpj</groupId>
 	<artifactId>cpj-swagger</artifactId>
@@ -6,7 +7,7 @@
 	<version>1.2.2-SNAPSHOT</version>
 	<name>cpj-swagger</name>
 	<description>cpj-swagger通过与swagger ui一起快速为您的web项目产生接口文档，并且支持在线测试接口。cpj-swagger可以很方便的与struts2、spring mvc、servlet集成使用</description>
-	<url>https://github.com/3cpj/swagger</url>
+	<url>https://github.com/cpjit/swagger</url>
 	<developers>
 		<developer>
 			<id>yonghuan</id>
@@ -22,30 +23,35 @@
 			<comments>A business-friendly OSS license</comments>
 		</license>
 	</licenses>
-	
+
 	<distributionManagement>
-	  <snapshotRepository>
-	    <id>ossrh</id>
-	    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-	  </snapshotRepository>
-	  <repository>
-	    <id>ossrh</id>
-	    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-	  </repository>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
 	</distributionManagement>
 
 	<scm>
-      <connection>
-         scm:git:https://github.com/3cpj/swagger.git
+		<connection>
+         scm:git:https://github.com/cpjit/swagger.git
       </connection>
-      <developerConnection>
-         scm:git:https://github.com/3cpj/swagger.git
+		<developerConnection>
+         scm:git:https://github.com/cpjit/swagger.git
       </developerConnection>
-      	<url>https://github.com/3cpj/swagger</url>
-     	<tag>v1.2.2</tag>
-	  </scm>
-  
+		<url>https://github.com/cpjit/swagger</url>
+		<tag>v1.2.2</tag>
+	</scm>
+
 	<dependencies>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.5</version>
+		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
@@ -68,25 +74,25 @@
 			<artifactId>cpj-common</artifactId>
 			<version>1.5.1</version>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>org.apache.struts</groupId>
-		    <artifactId>struts2-core</artifactId>
-		    <version>2.3.8</version>
-		    <scope>provided</scope>
+			<groupId>org.apache.struts</groupId>
+			<artifactId>struts2-core</artifactId>
+			<version>2.3.8</version>
+			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
 			<version>4.2.5.RELEASE</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>org.freemarker</groupId>
-		    <artifactId>freemarker</artifactId>
-		    <version>2.3.23</version>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>2.3.23</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -96,84 +102,84 @@
 		</dependency>
 	</dependencies>
 	<profiles>
-	   <profile> 
-	    <id>release</id>
-	    <build>
-	        <plugins>
-	            <plugin>
-	               <groupId>org.sonatype.plugins</groupId>
-	               <artifactId>nexus-staging-maven-plugin</artifactId>
-	               <version>1.7.3</version>
-	               <extensions>true</extensions>
-	               <configuration>
-	                 <serverId>ossrh</serverId>
-	                 <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-	                 <autoReleaseAfterClose>true</autoReleaseAfterClose>
-	               </configuration>
-	             </plugin>
-	             <plugin>
-	                 <groupId>org.apache.maven.plugins</groupId>
-	                 <artifactId>maven-release-plugin</artifactId>
-	                 <version>2.5</version>
-	                 <configuration>
-	                   <autoVersionSubmodules>true</autoVersionSubmodules>
-	                   <useReleaseProfile>false</useReleaseProfile>
-	                   <releaseProfiles>release</releaseProfiles>
-	                   <goals>deploy</goals>
-	                 </configuration>
-	            </plugin>
-	            <plugin>
-	                <groupId>org.apache.maven.plugins</groupId>
-	                <artifactId>maven-compiler-plugin</artifactId>
-	                <version>3.0</version>
-	                <configuration>
-	                    <source>1.7</source>
-	                    <target>1.7</target>
-	                </configuration>
-	            </plugin>
-	           <plugin>
-	               <groupId>org.apache.maven.plugins</groupId>
-	               <artifactId>maven-gpg-plugin</artifactId>
-	               <version>1.5</version>
-	               <executions>
-	                 <execution>
-	                   <id>sign-artifacts</id>
-	                   <phase>verify</phase>
-	                   <goals>
-	                     <goal>sign</goal>
-	                   </goals>
-	                 </execution>
-	               </executions>
-	            </plugin>
-	           <!-- <plugin>
-	                <groupId>org.apache.maven.plugins</groupId>
-	                <artifactId>maven-source-plugin</artifactId>
-	                <version>2.2.1</version>
-	                <executions>
-	                    <execution>
-	                        <id>attach-sources</id>
-	                        <goals>
-	                            <goal>jar-no-fork</goal>
-	                        </goals>
-	                    </execution>
-	                </executions>
-	            </plugin>  -->
-	            <!-- <plugin>
-	                <groupId>org.apache.maven.plugins</groupId>
-	                <artifactId>maven-javadoc-plugin</artifactId>
-	                <version>2.10.4</version>
-	                <executions>
-	                    <execution>
-	                        <id>attach-javadocs</id>
-	                        <goals>
-	                            <goal>jar</goal>
-	                        </goals>
-	                    </execution>
-	                </executions>
-	            </plugin> -->
-	         </plugins>
-	    </build>
-	  </profile>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>1.7.3</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoReleaseAfterClose>true</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>
+						<version>2.5</version>
+						<configuration>
+							<autoVersionSubmodules>true</autoVersionSubmodules>
+							<useReleaseProfile>false</useReleaseProfile>
+							<releaseProfiles>release</releaseProfiles>
+							<goals>deploy</goals>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<version>3.0</version>
+						<configuration>
+							<source>1.7</source>
+							<target>1.7</target>
+						</configuration>
+					</plugin>
+					<!-- <plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.5</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin> -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>2.2.1</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>2.10.4</version>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 	<build>
 		<finalName>cpj-swagger</finalName>
@@ -181,7 +187,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>					
+				<configuration>
 					<classesDirectory>target/classes/</classesDirectory>
 					<archive>
 						<addMavenDescriptor>false</addMavenDescriptor>
@@ -198,7 +204,15 @@
 					<encoding>utf8</encoding>
 				</configuration>
 			</plugin>
-
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<classesDirectory>target/classes/</classesDirectory>
+					<archive>
+						<addMavenDescriptor>false</addMavenDescriptor>
+					</archive>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
@@ -223,6 +237,7 @@
 				<configuration>
 					<aggregate>true</aggregate>
 					<encoding>utf8</encoding>
+					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 				<executions>
 					<execution>
@@ -232,21 +247,21 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<!-- <plugin>
-		      <groupId>org.apache.maven.plugins</groupId>
-		      <artifactId>maven-gpg-plugin</artifactId>
-		      <version>1.5</version>
-		      <executions>
-		        <execution>
-		          <id>sign-artifacts</id>
-		          <phase>verify</phase>
-		          <goals>
-		            <goal>sign</goal>
-		          </goals>
-		        </execution>
-		      </executions>
-	    	</plugin> -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin> -->
 		</plugins>
 	</build>
 </project>

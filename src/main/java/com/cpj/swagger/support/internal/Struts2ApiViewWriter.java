@@ -5,6 +5,8 @@
  */
 package com.cpj.swagger.support.internal;
 
+import java.util.Properties;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -22,5 +24,10 @@ public class Struts2ApiViewWriter extends DefaultApiViewWriter implements ApiVie
 		String url = request.getParameter("url");
 		String path = "com/cpj/swagger/support/internal/statics/"+url;
 		return path;
+	}
+	
+	@Override
+	protected String buildResourcePath(HttpServletRequest request, Properties config) {
+		return buildResourcePath(request);
 	}
 }

@@ -5,10 +5,12 @@
  */
 package com.cpj.swagger.support.struts2;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.struts2.ServletActionContext;
 
@@ -36,27 +38,13 @@ public class ApiAction extends ActionSupport {
 	
 	@Override
 	public String execute() throws Exception {
-		Properties props = new Properties();
-		InputStream is = ResourceUtil.getResourceAsStream("swagger.properties");
-		props.load(is);
 		HttpServletRequest request = ServletActionContext.getRequest();
-		String path = request.getContextPath();
-		String host = request.getServerName() + ":" + request.getServerPort() + path;
-		props.setProperty("apiHost", host);
-		String apiFile = props.getProperty("apiFile");
-		if(TextUtil.isEmpty(apiFile)) {
-			apiFile = "/WEB-INF/apis.json";
-		}
-		String apiFilePath = request.getServletContext().getRealPath(apiFile);
-		props.setProperty("apiFile", apiFilePath);
-		if(TextUtil.isEmpty(props.getProperty("devMode"))) {
-			props.setProperty("devMode", devMode);
-		}
+		Properties props = loadSettings(request);
 		apiViewWriter.writeApis(request, ServletActionContext.getResponse(), props);
 		return null;
 	}
-	
-	
+
+
 	@Deprecated
 	public void toIndex() throws Exception {
 		index();
@@ -64,6 +52,7 @@ public class ApiAction extends ActionSupport {
 	
 	/**
 	 * @since 1.2.0
+	 * @throws Exception
 	 */
 	public void index() throws Exception {
 		HttpServletRequest request = ServletActionContext.getRequest();
@@ -71,14 +60,7 @@ public class ApiAction extends ActionSupport {
 		if(TextUtil.isEmpty(lang)) {
 			lang = "zh-cn";
 		}
-		Properties props = new Properties();
-		InputStream is = ResourceUtil.getResourceAsStream("swagger.properties");
-		props.load(is);
-		String suffix = props.getProperty("suffix");
-		if(TextUtil.isEmpty(suffix)) {
-			suffix = "";
-		}
-		props.put("suffix", suffix);
+		Properties props = loadSettings(request);
 		apiViewWriter.writeIndex(request, ServletActionContext.getResponse(), lang, props);
 	}
 	
@@ -91,6 +73,33 @@ public class ApiAction extends ActionSupport {
 	 * @since 1.2.0
 	 */
 	public void statics() throws Exception {
-		apiViewWriter.writeStatic(ServletActionContext.getRequest(), ServletActionContext.getResponse());
+		HttpServletRequest request = ServletActionContext.getRequest();
+		HttpServletResponse response = ServletActionContext.getResponse();
+		apiViewWriter.writeStatic(request, response, loadSettings(request));
+	}
+
+
+	private Properties loadSettings(HttpServletRequest request) throws IOException {
+		Properties props = new Properties();
+		InputStream is = ResourceUtil.getResourceAsStream("swagger.properties");
+		props.load(is);
+		String path = request.getContextPath();
+		String host = request.getServerName() + ":" + request.getServerPort() + path;
+		props.setProperty("apiHost", host);
+		String apiFile = props.getProperty("apiFile");
+		if(TextUtil.isEmpty(apiFile)) {
+			apiFile = "/WEB-INF/apis.json";
+		}
+		String apiFilePath = request.getServletContext().getRealPath(apiFile);
+		props.setProperty("apiFile", apiFilePath);
+		if(TextUtil.isEmpty(props.getProperty("devMode"))) {
+			props.setProperty("devMode", devMode);
+		}
+		String suffix = props.getProperty("suffix");
+		if(TextUtil.isEmpty(suffix)) {
+			suffix = "";
+		}
+		props.put("suffix", suffix);
+		return props;
 	}
 }
