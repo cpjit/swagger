@@ -266,6 +266,6 @@ public void login(HttpServletResponse response, String username, String password
 是否是必须参数， 默认是false
 
 ##六. 示例程序下载
-[`spring mvc`](https://github.com/3cpj/swagger-demo-springmvc) <br />
-[`struts2`](https://github.com/3cpj/swagger-demo-struts2) <br />
-[`servlet`](https://github.com/3cpj/swagger-demo-servlet)
+[`spring mvc`](https://github.com/cpjit/swagger-demo-springmvc) <br />
+[`struts2`](https://github.com/cpjit/swagger-demo-struts2) <br />
+[`servlet`](https://github.com/cpjit/swagger-demo-servlet)
