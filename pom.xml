@@ -48,6 +48,11 @@
 
 	<dependencies>
 		<dependency>
+		  <groupId>org.apache.commons</groupId>
+		  <artifactId>commons-lang3</artifactId>
+		  <version>3.5</version>
+		</dependency>
+		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.5</version>
@@ -67,12 +72,6 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.1.0</version>
 			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>com.github.3cpj</groupId>
-			<artifactId>cpj-common</artifactId>
-			<version>1.5.1</version>
 		</dependency>
 
 		<dependency>
@@ -237,7 +236,6 @@
 				<configuration>
 					<aggregate>true</aggregate>
 					<encoding>utf8</encoding>
-					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 				<executions>
 					<execution>

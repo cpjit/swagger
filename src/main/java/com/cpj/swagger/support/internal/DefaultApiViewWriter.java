@@ -18,10 +18,10 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSONWriter;
-import com.cpj.common.util.TextUtil;
 import com.cpj.swagger.APIParseable;
 import com.cpj.swagger.APIParser;
 import com.cpj.swagger.support.internal.templates.FreemarkerUtils;
@@ -52,7 +52,7 @@ public class DefaultApiViewWriter implements ApiViewWriter {
 		root.put("basePath", basePath);
 		String host = request.getServerName() + ":" + request.getServerPort() + path;
 		String suffix = props.getProperty("suffix");
-		if(TextUtil.isEmpty(suffix)) {
+		if(StringUtils.isBlank(suffix)) {
 			suffix = "";
 		}
 		root.put("getApisUrl","http://" + host + "/api" + suffix);

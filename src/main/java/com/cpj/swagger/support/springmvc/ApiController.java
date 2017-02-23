@@ -11,19 +11,20 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.cpj.common.util.ResourceUtil;
-import com.cpj.common.util.TextUtil;
 import com.cpj.swagger.annotation.API;
 import com.cpj.swagger.annotation.APIs;
 import com.cpj.swagger.annotation.Param;
+import com.cpj.swagger.support.Constants;
 import com.cpj.swagger.support.internal.ApiViewWriter;
 import com.cpj.swagger.support.internal.DefaultApiViewWriter;
+import com.cpj.swagger.util.ResourceUtil;
 
 /**
  * @author yonghuan
@@ -32,19 +33,19 @@ import com.cpj.swagger.support.internal.DefaultApiViewWriter;
 @Controller
 @RequestMapping("/api")
 @APIs("/api")
-public class ApiController implements InitializingBean {
+public class ApiController implements InitializingBean, Constants {
 	
 	private ApiViewWriter apiViewWriter = new DefaultApiViewWriter();
 	private Properties props = new Properties();
 	
 	@RequestMapping(value = "index", method = RequestMethod.GET)
 	@API(value = "", summary = "获取API文档", method = "get", parameters = @Param(name = "lang", description = "语言（默认为中文）", type = "string", format = "string"))
-	public void index(HttpServletRequest request,HttpServletResponse response,  @RequestParam(defaultValue = "zh-cn") String lang) throws Exception {
-		if(TextUtil.isEmpty(lang)) {
-			lang = "zh-cn";
+	public void index(HttpServletRequest request,HttpServletResponse response,  @RequestParam(defaultValue = DEFAULT_LANG) String lang) throws Exception {
+		if(StringUtils.isBlank(lang)) {
+			lang = DEFAULT_LANG;
 		}
 		String suffix = props.getProperty("suffix");
-		if(TextUtil.isEmpty(suffix)) {
+		if(StringUtils.isBlank(suffix)) {
 			suffix = "";
 		}
 		props.put("suffix", suffix);
@@ -61,8 +62,8 @@ public class ApiController implements InitializingBean {
 		String host = request.getServerName() + ":" + request.getServerPort() + path;
 		props.setProperty("apiHost", host);
 		String apiFile = props.getProperty("apiFile");
-		if(TextUtil.isEmpty(apiFile)) {
-			apiFile = "/WEB-INF/apis.json";
+		if(StringUtils.isBlank(apiFile)) {
+			apiFile = DEFAULT_API_FILE;
 		}
 		String apiFilePath = request.getServletContext().getRealPath(apiFile);
 		props.setProperty("apiFile", apiFilePath);

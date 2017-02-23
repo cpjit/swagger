@@ -18,11 +18,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSONWriter;
-import com.cpj.common.reflect.ReflectUtils;
-import com.cpj.common.util.TextUtil;
 import com.cpj.swagger.annotation.API;
 import com.cpj.swagger.annotation.APISchema;
 import com.cpj.swagger.annotation.APISchemaPropertie;
@@ -34,6 +33,7 @@ import com.cpj.swagger.annotation.DataType;
 import com.cpj.swagger.annotation.Item;
 import com.cpj.swagger.annotation.Items;
 import com.cpj.swagger.annotation.Param;
+import com.cpj.swagger.util.ReflectUtils;
 
 /**
  * 接口解析器。
@@ -178,7 +178,7 @@ public final class APIParser implements APIParseable {
 		 * @return
 		 */
 		public Builder suffix(String suffix) {
-			if(TextUtil.isNotEmpty(suffix)) {
+			if(StringUtils.isNotBlank(suffix)) {
 				this.suffix = suffix;
 			}
 			return this;
@@ -390,12 +390,12 @@ public final class APIParser implements APIParseable {
 					p = new Path();
 					path.put(service.method().toLowerCase(), p);
 				}
-				if (TextUtil.isNotEmpty(service.description())) {
+				if (StringUtils.isNotBlank(service.description())) {
 					p.setDescription(service.description());
 				} else {
 					p.setDescription(service.summary());
 				}
-				if (TextUtil.isNotEmpty(service.operationId())) {
+				if (StringUtils.isNotBlank(service.operationId())) {
 					p.setOperationId(service.operationId());
 				} else { // 未设置operationId，
 					p.setOperationId(method.getName());
@@ -446,7 +446,7 @@ public final class APIParser implements APIParseable {
 							parameter.put("type", requestParamType);
 						} else { // 不包含文件上传
 							String in = requestParamAttrs.in();
-							if(TextUtil.isEmpty(in)) {
+							if(StringUtils.isBlank(in)) {
 								if("post".equalsIgnoreCase(service.method())) {
 									in = "formData";
 								} else {
@@ -455,7 +455,7 @@ public final class APIParser implements APIParseable {
 							}
 							parameter.put("in", in);
 							parameter.put("type", requestParamType);
-							if(TextUtil.isNotEmpty(requestParamFormat)) {
+							if(StringUtils.isNotBlank(requestParamFormat)) {
 								parameter.put("format", requestParamFormat);
 							}
 						}
@@ -534,7 +534,7 @@ public final class APIParser implements APIParseable {
 			Tag tag = new Tag();
 			tag.setName(apiTag.value());
 			tag.setDescription(apiTag.description());
-			if(TextUtil.isNotEmpty(apiTag.description()) || !tags.contains(tag)) {
+			if(StringUtils.isNotBlank(apiTag.description()) || !tags.contains(tag)) {
 				tags.add(tag);
 			} 
 		}

@@ -9,8 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
-
-import com.cpj.common.util.TextUtil;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author yonghuan
@@ -29,7 +28,7 @@ class FileTypeMap {
 	public final static String getContentType(String file) {
 		String extension = FilenameUtils.getExtension(file);
 		String mime = extension2mime.get(extension);
-		if(TextUtil.isEmpty(mime)) {
+		if(StringUtils.isBlank(mime)) {
 			mime = "application/octet-stream";
 		}
 		return mime;

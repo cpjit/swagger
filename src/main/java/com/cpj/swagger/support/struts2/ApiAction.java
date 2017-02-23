@@ -12,12 +12,13 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.struts2.ServletActionContext;
 
-import com.cpj.common.util.ResourceUtil;
-import com.cpj.common.util.TextUtil;
+import com.cpj.swagger.support.Constants;
 import com.cpj.swagger.support.internal.ApiViewWriter;
 import com.cpj.swagger.support.internal.Struts2ApiViewWriter;
+import com.cpj.swagger.util.ResourceUtil;
 import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.inject.Inject;
 
@@ -26,7 +27,7 @@ import com.opensymphony.xwork2.inject.Inject;
  * @since 1.0.0
  */
 @SuppressWarnings("serial")
-public class ApiAction extends ActionSupport {
+public class ApiAction extends ActionSupport implements Constants {
 	
 	@Inject("struts.action.extension")
 	private String actionExtension;
@@ -57,8 +58,8 @@ public class ApiAction extends ActionSupport {
 	public void index() throws Exception {
 		HttpServletRequest request = ServletActionContext.getRequest();
 		String lang = request.getParameter("lang");
-		if(TextUtil.isEmpty(lang)) {
-			lang = "zh-cn";
+		if(StringUtils.isBlank(lang)) {
+			lang = DEFAULT_LANG;
 		}
 		Properties props = loadSettings(request);
 		apiViewWriter.writeIndex(request, ServletActionContext.getResponse(), lang, props);
@@ -87,16 +88,16 @@ public class ApiAction extends ActionSupport {
 		String host = request.getServerName() + ":" + request.getServerPort() + path;
 		props.setProperty("apiHost", host);
 		String apiFile = props.getProperty("apiFile");
-		if(TextUtil.isEmpty(apiFile)) {
-			apiFile = "/WEB-INF/apis.json";
+		if(StringUtils.isBlank(apiFile)) {
+			apiFile = DEFAULT_API_FILE;
 		}
 		String apiFilePath = request.getServletContext().getRealPath(apiFile);
 		props.setProperty("apiFile", apiFilePath);
-		if(TextUtil.isEmpty(props.getProperty("devMode"))) {
+		if(StringUtils.isBlank(props.getProperty("devMode"))) {
 			props.setProperty("devMode", devMode);
 		}
 		String suffix = props.getProperty("suffix");
-		if(TextUtil.isEmpty(suffix)) {
+		if(StringUtils.isBlank(suffix)) {
 			suffix = "";
 		}
 		props.put("suffix", suffix);
