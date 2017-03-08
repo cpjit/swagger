@@ -177,7 +177,7 @@ public void login(HttpServletResponse response, String username, String password
  <li>当前请求方式为POST的时候，默认值为formData</li>
  <li>请求方式为非POST的时候，默认值为query</li>
 </ul>
-#### ~~`type_`~~ 
+#### ~~`type`~~ 
 数据类型, 与[`format`](#format)一起指定请求参数的数据类型。
 	 `type` 和 `format` 的可选值如下：
 	   <table border="0" cellpadding="1" cellspacing="0">
@@ -260,13 +260,14 @@ public void login(HttpServletResponse response, String username, String password
 	 	</table>
 #### ~~`format`~~
 数据格式，[`type`](#type)一起指定请求参数的数据类型。
-### `dataType`
+#### `dataType`
 数据类型，1.2.2引入的新属性。
 #### description
 参数说明
 #### `required`
 是否是必须参数， 默认是false
-
+### 枚举 com.cpj.swagger.annotation.DataType
+可用的数据类型
 ##六. 示例程序下载
 [`spring mvc`](https://github.com/cpjit/swagger-demo-springmvc) <br />
 [`struts2`](https://github.com/cpjit/swagger-demo-struts2) <br />
