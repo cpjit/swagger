@@ -15,13 +15,7 @@
 <dependency>
 	<groupId>com.github.3cpj</groupId>
 	<artifactId>cpj-swagger</artifactId>
-	<version>1.2.1</version>
-</dependency>
-您也可以使用最新的snapshot版：
-<dependency>
-	<groupId>com.github.3cpj</groupId>
-	<artifactId>cpj-swagger</artifactId>
-	<version>1.2.2-SNAPSHOT</version>
+	<version>1.2.2</version>
 </dependency>
 ```
 
