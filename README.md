@@ -149,6 +149,10 @@ public class DemoController {
 </br>特别说明：</br>
 当为 `multipart/form-data` 时，[`Param`](#3-注解 @comcpjswaggerannotationparam)
 的[`in`](#in)属性必须为`formData`，但是[`in`](#in)为path、header时[`Param`](#3-注解-comcpjswaggerannotationparam)不用遵循此规则。
+#### `deprecated`
+1.2.2引入的新属性，表示接口是否已经被废弃，默认是false。
+#### `hide`
+1.2.2引入的新属性，表示是否隐藏接口。
 ### 3. 注解 @com.cpj.swagger.annotation.Param
 用来说明请求参数，例如：
 ```java
@@ -261,12 +265,12 @@ public void login(HttpServletResponse response, String username, String password
 #### ~~`format`~~
 数据格式，[`type`](#type)一起指定请求参数的数据类型。
 #### `dataType`
-数据类型，1.2.2引入的新属性。
+1.2.2引入的新属性，替代`type`和`format`来指定数据类型。
 #### description
 参数说明
 #### `required`
 是否是必须参数， 默认是false
-### 枚举 com.cpj.swagger.annotation.DataType
+### 4.枚举 com.cpj.swagger.annotation.DataType
 可用的数据类型
 ##六. 示例程序下载
 [`spring mvc`](https://github.com/cpjit/swagger-demo-springmvc) <br />
