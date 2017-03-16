@@ -156,6 +156,7 @@
 				<configuration>
 					<aggregate>true</aggregate>
 					<encoding>utf8</encoding>
+					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 				<executions>
 					<execution>
@@ -179,6 +180,9 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

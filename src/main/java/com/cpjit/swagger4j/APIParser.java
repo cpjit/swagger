@@ -265,22 +265,11 @@ public final class APIParser implements APIParseable {
 		}
 
 		private License license;
-
-		/**
-		 * 设置API遵循的协议（如apahce开源协议）
-		 * 
-		 * @param val
-		 *            API遵循的协议（如apahce开源协议）
-		 * @return
-		 */
-		public Builder license(License val) {
-			try {
-				this.license = val.clone();
-			} catch (CloneNotSupportedException e) {
-				throw new AssertionError(e);
-			}
+		public Builder license(License license) {
+			this.license = license;
 			return this;
 		}
+
 	}
 
 	private APIDocInfo info;

@@ -65,9 +65,4 @@ public class License {
 	public void setUrl(String url) {
 		this.url = url;
 	}
-	
-	@Override
-	public License clone() throws CloneNotSupportedException {
-		return (License) super.clone();
-	}
 }
