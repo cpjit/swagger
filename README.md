@@ -181,10 +181,12 @@ public void login(HttpServletResponse response, String username, String password
  <li>当前请求方式为POST的时候，默认值为formData</li>
  <li>请求方式为非POST的时候，默认值为query</li>
 </ul>
+
 #### ~~`type`~~ 
 数据类型, 与[`format`](#format)一起指定请求参数的数据类型。
 	 `type` 和 `format` 的可选值如下：
-	   <table border="0" cellpadding="1" cellspacing="0">
+	 
+<table border="0" cellpadding="1" cellspacing="0">
 		<thead>
 		<tr bgcolor="#EFEFEF" style="border: 1px solid #cccccc;">
 		<th align="left">通用名</th>
@@ -261,7 +263,8 @@ public void login(HttpServletResponse response, String username, String password
 		<td>Used to hint UIs the input needs to be obscured.</td>
 		</tr>
 		</tbody>
-	 	</table>
+   </table>
+   
 #### ~~`format`~~
 数据格式，[`type`](#type)一起指定请求参数的数据类型。
 #### `dataType`
