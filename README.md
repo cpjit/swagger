@@ -1,5 +1,6 @@
-# cpj-swagger
-`cpj-swagger`通过与[`swagger ui`](http://swagger.io/)一起快速为您的web项目产生接口文档，并且支持在线测试接口。`cpj-swagger`可以很方便的与`struts2`、`spring mvc`、`servlet`集成使用，下面的教程将详细说明如何使用cpj-swagger。
+# swagger4j
+从版本2.0.0开始，`cpj-swagger`更名为`swagger4j`，顶级包名也更名为com.cpjit.swagger4j，与版本1.x.x 完全不兼容。<br />
+`swagger4j`通过与[`swagger ui`](http://swagger.io/)一起快速为您的web项目产生接口文档，并且支持在线测试接口。`swagger4j`可以很方便的与`struts2`、`spring mvc`、`servlet`集成使用，下面的教程将详细说明如何使用swagger4j。
 
 ## 目录
 [`一. 加入依赖JAR文件`](#一-加入依赖JAR文件)<br />
@@ -7,45 +8,44 @@
 [`三. 标注你的接口`](#三-标注你的接口)<br />
 [`四. 访问接口文档`](#四-访问接口文档)<br />
 [`五. 核心API`](#五-核心api)<br />
-[`六. 示例程序下载`](#六-示例程序下载)<br />
 
 ## 一. 加入依赖JAR文件
-* maven：
+* maven快照版：
 ```xml
 <dependency>
-	<groupId>com.github.3cpj</groupId>
-	<artifactId>cpj-swagger</artifactId>
-	<version>1.2.2</version>
+	<groupId>com.cpjit</groupId>
+	<artifactId>swagger4j</artifactId>
+	<version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
 ## 二. 配置
 ### 1. 选择使用方式
-您可以通过三种方式来使用`cpj-swagger`。
+您可以通过三种方式来使用`swagger4j`。
 * 与strut2集成</br>
-如果您的web项目是基于`strut2`的，您可以在您的strut2配置文件中加入如下代码来快速集成`cpj-swagger`：
+如果您的web项目是基于`strut2`的，您可以在您的strut2配置文件中加入如下代码来快速集成`swagger4j`：
 ```xml
    <constant name="struts.enable.DynamicMethodInvocation" value="true" />
    <constant name="struts.devMode" value="true" />
 
 	<package name="api" namespace="/api" extends="struts-default" >
-		<action name="*" class="com.cpj.swagger.support.struts2.ApiAction" method="{0}">
+		<action name="*" class="com.cpjit.swagger4j.support.struts2.ApiAction" method="{0}">
 		</action>
 	</package>
 ```
 * 与spring mvc集成 </br>
-如果您的web项目是基于`spring mvc`的，您可以在您的spring mvc配置文件中加入如下代码来快速集成`cpj-swagger`：
+如果您的web项目是基于`spring mvc`的，您可以在您的spring mvc配置文件中加入如下代码来快速集成`swagger4j`：
 ```xml
- <context:component-scan base-package="com.cpj.swagger.support.springmvc">
+ <context:component-scan base-package="com.cpjit.swagger4j.support.springmvc">
     	<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
  </context:component-scan>
 ```
 * 与servlet集成</br>
-如果您的web项目是基于`servlet`的，您可以在您的web.xml配置文件中加入如下代码来快速集成`cpj-swagger`：
+如果您的web项目是基于`servlet`的，您可以在您的web.xml配置文件中加入如下代码来快速集成`swagger4j`：
 ```xml
 <servlet>
     <servlet-name>apiServlet</servlet-name>
-    <servlet-class>com.cpj.swagger.support.servlet.ApiServlet</servlet-class>
+    <servlet-class>com.cpjit.swagger4j.support.servlet.ApiServlet</servlet-class>
 </servlet>
 <servlet-mapping>
     <servlet-name>apiServlet</servlet-name>
@@ -55,14 +55,14 @@
 ### 2. 修改配置项
 您需要在项目的源文件目录下添加一个`swagger.properties`文件，并加入以下配置项：
 ```java
-packageToScan=com.cpj.swagger.action
+packageToScan=com.cpjit.swagger4j.action
 apiDescription=Swagger Demo
 apiTitle=Swagger Demo
 apiVersion=1.0.0
 teamOfService=www.cpj.com
 devMode=true
 ```
-`cpj-swagger`的配置信息都必须写在`swagger.properties`文件里面。具体的配置项及其说明如下：
+`swagger4j`的配置信息都必须写在`swagger.properties`文件里面。具体的配置项及其说明如下：
 <table>
 	<thead>
 		<tr><th>键</th><th>说明</th></tr>
@@ -82,7 +82,7 @@ devMode=true
 </table>
 
 ## 三. 标注你的接口
-接下来需要用cpj-swagger提供的注解来标明你的接口，下面以spring mvc为例来说明如何标注接口，其他方式请参考[`示例程序`](#六-示例程序下载)。
+接下来需要用swagger4j提供的注解来标明你的接口，下面以spring mvc为例来说明如何标注接口，其他方式请参考[`示例程序`](#六-示例程序下载)。
 ```java
 @Controller
 @APIs("/demo")
@@ -112,8 +112,8 @@ public class DemoController {
 http://127.0.0.1:8080/您的项目名/api/index
 
 ## 五. 核心API
-### 1. 注解 @com.cpj.swagger.annotation.APIs
-该注解放在一个类上面，用来表明类中包含作为HTTP接口的方法（被注解[`@com.cpj.swagger.annotation.API`](#2-注解-comcpjswaggerannotationapi)标注了的方法）。
+### 1. 注解 @com.cpjit.swagger4j.annotation.APIs
+该注解放在一个类上面，用来表明类中包含作为HTTP接口的方法（被注解[`@com.cpjit.swagger4j.annotation.API`](#2-注解-comcpjitswagger4jannotationapi)标注了的方法）。
 该注解的`value`用来设置接口的前缀，这和`struts2`的命名空间很像。使用示例如下：
 ```java
 @APIs("/demo")
@@ -121,10 +121,10 @@ public class DemoController {
   
 }
 ```
-### 2. 注解 @com.cpj.swagger.annotation.API
+### 2. 注解 @com.cpjit.swagger4j.annotation.API
 该注解放在一个方法上面，用来表明方法是HTTP接口方法，注解的属性说明如下：
 #### `value`
-与注解[`@com.cpj.swagger.annotation.APIs`](#1-注解-comcpjswaggerannotationapis)的`value`属性一起来指定接口的地址，例如有如下设置：
+与注解[`@com.cpjit.swagger4j.annotation.APIs`](#1-注解-comcpjitswagger4jannotationapis)的`value`属性一起来指定接口的地址，例如有如下设置：
 ```java
 @APIs("/demo")
 public class DemoController {
@@ -136,7 +136,7 @@ public class DemoController {
 那么`login`方法对应的接口地址为： youhost/demo/login
 
 #### `parameters`
-用来指定接口的请求参数，详情参见注解[`Param`](#3-注解-comcpjswaggerannotationparam)的说明。
+用来指定接口的请求参数，详情参见注解[`Param`](#3-注解-comcpjitswagger4jannotationparam)的说明。
 #### `summary`
 接口功能简述。
 #### `description`
@@ -147,13 +147,13 @@ public class DemoController {
 
 允许的请求MIME，比如：multipart/form-data、application/xml、application/json默认是application/json; charset=utf-8。
 </br>特别说明：</br>
-当为 `multipart/form-data` 时，[`Param`](#3-注解 @comcpjswaggerannotationparam)
-的[`in`](#in)属性必须为`formData`，但是[`in`](#in)为path、header时[`Param`](#3-注解-comcpjswaggerannotationparam)不用遵循此规则。
+当为 `multipart/form-data` 时，[`Param`](#3-注解 @comcpjitswagger4jannotationparam)
+的[`in`](#in)属性必须为`formData`，但是[`in`](#in)为path、header时[`Param`](#3-注解-comcpjitswagger4jannotationparam)不用遵循此规则。
 #### `deprecated`
 1.2.2引入的新属性，表示接口是否已经被废弃，默认是false。
 #### `hide`
 1.2.2引入的新属性，表示是否隐藏接口。
-### 3. 注解 @com.cpj.swagger.annotation.Param
+### 3. 注解 @com.cpjit.swagger4j.annotation.Param
 用来说明请求参数，例如：
 ```java
 @API(value="login", summary="示例1", parameters={
@@ -164,7 +164,7 @@ public void login(HttpServletResponse response, String username, String password
 }
 ```
 这表明该接口需要两个请求参数，及`username`、`password`。
-注解`@com.cpj.swagger.annotation.Param`的属性说明如下：
+注解`@com.cpjit.swagger4j.annotation.Param`的属性说明如下：
 #### `name`
 参数名
 #### `in`
@@ -270,9 +270,5 @@ public void login(HttpServletResponse response, String username, String password
 参数说明
 #### `required`
 是否是必须参数， 默认是false
-### 4.枚举 com.cpj.swagger.annotation.DataType
+### 4.枚举 com.cpjit.swagger4j.annotation.DataType
 可用的数据类型
-##六. 示例程序下载
-[`spring mvc`](https://github.com/cpjit/swagger-demo-springmvc) <br />
-[`struts2`](https://github.com/cpjit/swagger-demo-struts2) <br />
-[`servlet`](https://github.com/cpjit/swagger-demo-servlet)
