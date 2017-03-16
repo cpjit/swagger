@@ -261,7 +261,8 @@ public void login(HttpServletResponse response, String username, String password
 		<td>Used to hint UIs the input needs to be obscured.</td>
 		</tr>
 		</tbody>
-	 	</table>
+   </table>
+   
 #### ~~`format`~~
 数据格式，[`type`](#type)一起指定请求参数的数据类型。
 #### `dataType`
