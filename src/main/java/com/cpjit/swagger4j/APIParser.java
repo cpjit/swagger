@@ -76,7 +76,15 @@ import com.cpjit.swagger4j.util.ReflectUtils;
  */
 public final class APIParser implements APIParseable {
 	
-	private final static Logger sLogger = Logger.getLogger(APIParser.class);
+	private final static Logger LOG = Logger.getLogger(APIParser.class);
+
+	private String host;
+	private String basePath;
+	private String suffix = "";
+	private APIDocInfo info;
+	private String file;
+	private List<String> packageToScan;
+	private Map<String, Item> items;
 
 	/**
 	 * 创建一个解析器。
@@ -119,9 +127,6 @@ public final class APIParser implements APIParseable {
 				.version(builder.version).build();
 	}
 
-	private String host;
-	private String basePath;
-	private String suffix = "";
 	/**
 	 * @author yonghuan
 	 */
@@ -130,6 +135,15 @@ public final class APIParser implements APIParseable {
 		private String host;
 		private String file;
 		private List<String> packageToScan;
+
+		private String basePath;
+		private String suffix = "";
+		private String description;
+		private String version;
+		private String title;
+		private String termsOfService;
+		private String contact;
+		private License license;
 
 		/**
 		 * 创建一个构建器。
@@ -170,8 +184,6 @@ public final class APIParser implements APIParseable {
 			return new APIParser(this);
 		}
 
-		private String basePath;
-
 		/**
 		 * 设置API相对于host（API访问地址）的基路径
 		 * 
@@ -184,7 +196,6 @@ public final class APIParser implements APIParseable {
 			return this;
 		}
 
-		private String suffix = "";
 		/**
 		 * 设置请求地址的后缀，如：.do、.action。
 		 * @param suffix 请求地址的后缀
@@ -197,8 +208,6 @@ public final class APIParser implements APIParseable {
 			return this;
 		}
 		
-		private String description;
-
 		/**
 		 * 设置API描述
 		 * @param val
@@ -209,8 +218,6 @@ public final class APIParser implements APIParseable {
 			this.description = val;
 			return this;
 		}
-
-		private String version;
 
 		/**
 		 * 设置API版本
@@ -224,8 +231,6 @@ public final class APIParser implements APIParseable {
 			return this;
 		}
 
-		private String title;
-
 		/**
 		 * 设置API标题
 		 * 
@@ -237,8 +242,6 @@ public final class APIParser implements APIParseable {
 			this.title = val;
 			return this;
 		}
-
-		private String termsOfService;
 
 		/**
 		 * 设置API开发团队的服务地址
@@ -252,8 +255,6 @@ public final class APIParser implements APIParseable {
 			return this;
 		}
 
-		private String contact;
-
 		/**
 		 * 设置API开发团队的联系人
 		 * 
@@ -265,8 +266,6 @@ public final class APIParser implements APIParseable {
 			this.contact = val;
 			return this;
 		}
-
-		private License license;
 
 		/**
 		 * 设置API遵循的协议（如apahce开源协议）
@@ -281,18 +280,12 @@ public final class APIParser implements APIParseable {
 		}
 	}
 
-	private APIDocInfo info;
-
-	private String file;
-
 	/**
 	 * @return 解析完成后存放JSON数据的文件路径。
 	 */
 	public String getFile() {
 		return file;
 	}
-
-	private List<String> packageToScan;
 
 	/**
 	 * @return 待解析接口所在包
@@ -303,13 +296,11 @@ public final class APIParser implements APIParseable {
 
 	private List<Package> packages;
 
-	private Map<String, Item> items;
-
 	@Override
 	public void parse() throws Exception {
 		/* 将结果写入文件 */
 		File f = new File(file);
-		sLogger.debug("生成的文件保存在=>" + f.getAbsolutePath());
+		LOG.debug("生成的文件保存在=>" + f.getAbsolutePath());
 		JSONWriter writer = new JSONWriter(new FileWriter(f));
 		APIDoc api = (APIDoc) parseAndNotStore();
 		writer.writeObject(api);
@@ -354,9 +345,6 @@ public final class APIParser implements APIParseable {
 	
 	/**
 	 * url -> [ path ]
-	 * 
-	 * @return
-	 * @throws Exception
 	 */
 	private Map<String, Map<String, Path>> parsePath() throws Exception,
 			IllegalArgumentException {
@@ -369,143 +357,151 @@ public final class APIParser implements APIParseable {
 			}
 			List<Method> apiMethods = scanAPIMethod(clazz);
 			for (Method method : apiMethods) {
-				API service = method.getAnnotation(API.class);
-				if(service.hide()) {
-					continue;
-				}
-				boolean isMultipart = hasMultipart(service);
-				String url;
-				if("".equals(service.value())) {
-					url = apis.value() + suffix;
-				} else {
-					url = apis.value() + "/" + service.value() + suffix;
-				}
-				Map<String, Path> path = paths.get(url); // get/psot/put/delete
-				if (path == null) {
-					path = new HashMap<String, Path>();
-					paths.put(url, path);
-				}
-	
-				Path p = path.get(service.method());
-				if (p == null) {
-					p = new Path();
-					path.put(service.method().toLowerCase(), p);
-				}
-				if (StringUtils.isNotBlank(service.description())) {
-					p.setDescription(service.description());
-				} else {
-					p.setDescription(service.summary());
-				}
-				if (StringUtils.isNotBlank(service.operationId())) {
-					p.setOperationId(service.operationId());
-				} else { // 未设置operationId，
-					p.setOperationId(method.getName());
-				}
-				List<String> tags = Arrays.asList(service.tags());
-				if(service.tags().length == 0) {
-					String ns = apis.value();
-					if(ns.startsWith("/")) {
-						ns = ns.substring(1);
-					}
-					tags = Arrays.asList(ns);
-				}
-				p.setTags(tags);
-				p.setSummary(service.summary());
-				if (isMultipart) { // multipart/form-data
-					p.setConsumes(Arrays.asList("multipart/form-data"));
-				} else {
-					p.setConsumes(Arrays.asList(service.consumes()));
-				}
-				p.setProduces(Arrays.asList(service.produces()));
-				p.setDeprecated(service.deprecated());
-				List<Map<String, Object>> parameters = new ArrayList<Map<String, Object>>(); // 请求参数
-				/** 解析参数，优先使用schema */
-				for (Param requestParamAttrs : service.parameters()) {
-					Map<String, Object> parameter = new HashMap<String, Object>();
-					if (requestParamAttrs.schema() != null && !requestParamAttrs.schema().trim().equals("")) { // 处理复杂类型的参数
-						if (isMultipart) { // 当请求的Content-Type为multipart/form-data将忽略复杂类型的参数
-							throw new IllegalArgumentException(
-									"请求的Content-Type为multipart/form-data，将忽略复杂类型的请求参数[ "
-											+ requestParamAttrs.schema() + " ]");
-						}
-						parameter.put("in", "body");
-						parameter.put("name", "body");
-						Map<String, Object> $ = new HashMap<String, Object>();
-						$.put("$ref", "#/definitions/" + requestParamAttrs.schema());
-						parameter.put("schema", $);
-					} else { // 简单类型的参数
-						String requestParamType, requestParamFormat;
-						if(requestParamAttrs.dataType() != DataType.UNKNOWN) { // since 1.2.2
-							requestParamType = requestParamAttrs.dataType().type();
-							requestParamFormat = requestParamAttrs.dataType().format();
-						} else {
-							requestParamType = requestParamAttrs.type();
-							requestParamFormat = requestParamAttrs.format();
-						}
-						if (isMultipart && !"path".equals(requestParamAttrs.in()) && !"header".equals(requestParamAttrs.in())) { // 包含文件上传
-							parameter.put("in", "formData");
-							parameter.put("type", requestParamType);
-						} else { // 不包含文件上传
-							String in = requestParamAttrs.in();
-							if(StringUtils.isBlank(in)) {
-								if("post".equalsIgnoreCase(service.method())) {
-									in = "formData";
-								} else {
-									in = "query";
-								}
-							}
-							parameter.put("in", in);
-							parameter.put("type", requestParamType);
-							if(StringUtils.isNotBlank(requestParamFormat)) {
-								parameter.put("format", requestParamFormat);
-							}
-						}
-						parameter.put("name", requestParamAttrs.name());
-						parameter.put("description", requestParamAttrs.description());
-						parameter.put("required", requestParamAttrs.required());
-						if (requestParamAttrs.items() != null && !requestParamAttrs.items().trim().equals("")) {
-							if (!requestParamType.equals("array")) {
-								throw new IllegalArgumentException("请求参数 [ "+ requestParamAttrs.name()+ " ]存在可选值(items)的时候，请求参数类型(type)的值只能为array");
-							}
-							Item item = items.get(requestParamAttrs.items().trim());
-							if (item != null) { // 可选值
-	
-								Map<String, Object> i = new HashMap<String, Object>();
-								i.put("type", item.type());
-								i.put("default", item.defaultValue());
-								if (item.type().equals("string")) { // string
-									i.put("enum", item.optionalValue());
-								} else if (item.type().equals("boolean")) { // boolean
-									List<Boolean> bs = new ArrayList<Boolean>();
-									for (String v : item.optionalValue()) {
-										bs.add(Boolean.parseBoolean(v));
-									}
-									i.put("enum", bs);
-								} else if (item.type().equals("integer")) { // integer
-									List<Integer> is = new ArrayList<Integer>();
-									for (String v : item.optionalValue()) {
-										is.add(Integer.parseInt(v));
-									}
-									i.put("enum", is);
-								} else { // double
-									List<Double> ds = new ArrayList<Double>();
-									for (String v : item.optionalValue()) {
-										ds.add(Double.parseDouble(v));
-									}
-									i.put("enum", ds);
-								}
-								parameter.put("items", i);
-							}
-						}
-					}
-					parameters.add(parameter);
-				}
-				p.setParameters(parameters);
+				api2Path(method, apis, paths);
 			}
 		}
 		return paths;
 	}
 
+	private void api2Path(Method method, APIs apis, Map<String, Map<String, Path>> paths) {
+		API service = method.getAnnotation(API.class);
+		if(service.hide()) {
+			return;
+		}
+		final boolean isMultipart = hasMultipart(service);
+		String url;
+		if("".equals(service.value())) {
+			url = apis.value() + suffix;
+		} else {
+			url = apis.value() + "/" + service.value() + suffix;
+		}
+		Map<String, Path> path = paths.get(url); // get/psot/put/delete
+		if (path == null) {
+			path = new HashMap<String, Path>();
+			paths.put(url, path);
+		}
+
+		Path p = path.get(service.method());
+		if (p == null) {
+			p = new Path();
+			path.put(service.method().toLowerCase(), p);
+		}
+		if (StringUtils.isNotBlank(service.description())) {
+			p.setDescription(service.description());
+		} else {
+			p.setDescription(service.summary());
+		}
+		if (StringUtils.isNotBlank(service.operationId())) {
+			p.setOperationId(service.operationId());
+		} else { // 未设置operationId，
+			p.setOperationId(method.getName());
+		}
+		List<String> tags = Arrays.asList(service.tags());
+		if(service.tags().length == 0) {
+			String ns = apis.value();
+			if(ns.startsWith("/")) {
+				ns = ns.substring(1);
+			}
+			tags = Arrays.asList(ns);
+		}
+		p.setTags(tags);
+		p.setSummary(service.summary());
+		if (isMultipart) { // multipart/form-data
+			p.setConsumes(Arrays.asList("multipart/form-data"));
+		} else {
+			p.setConsumes(Arrays.asList(service.consumes()));
+		}
+		p.setProduces(Arrays.asList(service.produces()));
+		p.setDeprecated(service.deprecated());
+		p.setParameters(parseParameters(service, isMultipart));
+	}
+	
+	private List<Map<String, Object>> parseParameters(API service, boolean isMultipart) {
+		List<Map<String, Object>> parameters = new ArrayList<Map<String, Object>>(); // 请求参数
+		/** 解析参数，优先使用schema */
+		for (Param paramAttr : service.parameters()) {
+			Map<String, Object> parameter = new HashMap<String, Object>();
+			if (paramAttr.schema() != null && !paramAttr.schema().trim().equals("")) { // 处理复杂类型的参数
+				if (isMultipart) { // 当请求的Content-Type为multipart/form-data将忽略复杂类型的参数
+					throw new IllegalArgumentException(
+							"请求的Content-Type为multipart/form-data，将忽略复杂类型的请求参数[ "
+									+ paramAttr.schema() + " ]");
+				}
+				parameter.put("in", "body");
+				parameter.put("name", "body");
+				Map<String, Object> ref = new HashMap<String, Object>();
+				ref.put("$ref", "#/definitions/" + paramAttr.schema());
+				parameter.put("schema", ref);
+			} else { // 简单类型的参数
+				String requestParamType, requestParamFormat;
+				if(paramAttr.dataType() != DataType.UNKNOWN) { // since 1.2.2
+					requestParamType = paramAttr.dataType().type();
+					requestParamFormat = paramAttr.dataType().format();
+				} else {
+					requestParamType = paramAttr.type();
+					requestParamFormat = paramAttr.format();
+				}
+				if (isMultipart && !"path".equals(paramAttr.in()) && !"header".equals(paramAttr.in())) { // 包含文件上传
+					parameter.put("in", "formData");
+					parameter.put("type", requestParamType);
+				} else { // 不包含文件上传
+					String in = paramAttr.in();
+					if(StringUtils.isBlank(in)) {
+						if("post".equalsIgnoreCase(service.method())) {
+							in = "formData";
+						} else {
+							in = "query";
+						}
+					}
+					parameter.put("in", in);
+					parameter.put("type", requestParamType);
+					if(StringUtils.isNotBlank(requestParamFormat)) {
+						parameter.put("format", requestParamFormat);
+					}
+				}
+				parameter.put("name", paramAttr.name());
+				parameter.put("description", paramAttr.description());
+				parameter.put("required", paramAttr.required());
+				if (paramAttr.items() != null && !paramAttr.items().trim().equals("")) {
+					if (!requestParamType.equals("array")) {
+						throw new IllegalArgumentException("请求参数 [ "+ paramAttr.name()+ " ]存在可选值(items)的时候，请求参数类型(type)的值只能为array");
+					}
+					Item item = items.get(paramAttr.items().trim());
+					if (item != null) { // 可选值
+	
+						Map<String, Object> i = new HashMap<String, Object>();
+						i.put("type", item.type());
+						i.put("default", item.defaultValue());
+						if (item.type().equals("string")) { // string
+							i.put("enum", item.optionalValue());
+						} else if (item.type().equals("boolean")) { // boolean
+							List<Boolean> bs = new ArrayList<Boolean>();
+							for (String v : item.optionalValue()) {
+								bs.add(Boolean.parseBoolean(v));
+							}
+							i.put("enum", bs);
+						} else if (item.type().equals("integer")) { // integer
+							List<Integer> is = new ArrayList<Integer>();
+							for (String v : item.optionalValue()) {
+								is.add(Integer.parseInt(v));
+							}
+							i.put("enum", is);
+						} else { // double
+							List<Double> ds = new ArrayList<Double>();
+							for (String v : item.optionalValue()) {
+								ds.add(Double.parseDouble(v));
+							}
+							i.put("enum", ds);
+						}
+						parameter.put("items", i);
+					}
+				}
+			}
+			parameters.add(parameter);
+		}
+		return parameters;
+	}
+	
 	/**
 	 * 判断接口的请求Content-Type是否为multipart/form-data。
 	 */
@@ -523,7 +519,7 @@ public final class APIParser implements APIParseable {
 	 */
 	private List<Tag> parseTag() throws Exception {
 		/* since1.2.2 先扫描被@APITag标注了的类 */
-		Set<Tag> tagsfromClass = scanAPIsAnnotations().stream()
+		Set<Tag> tagsFromClass = scanAPIsAnnotations().stream()
 								.map(apiTag -> new Tag(apiTag.value(), apiTag.description()))
 								// TODO 这里需要判断吗 ？
 								// .filter(tag -> StringUtils.isNotBlank(tag.getDescription()) && !tags.contains(tag))
@@ -535,7 +531,7 @@ public final class APIParser implements APIParseable {
 					.flatMap(apiTags -> Arrays.asList(apiTags.tags()).stream())
 					.map(apiTag -> new Tag(apiTag.value(), apiTag.description()))
 					.collect(Collectors.toSet());
-		tagsFromPackage.addAll(tagsfromClass);
+		tagsFromPackage.addAll(tagsFromClass);
 		return new ArrayList<>(tagsFromPackage);
 	}
 
