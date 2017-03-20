@@ -8,6 +8,7 @@
 [`三. 标注你的接口`](#三-标注你的接口)<br />
 [`四. 访问接口文档`](#四-访问接口文档)<br />
 [`五. 核心API`](#五-核心api)<br />
+[`六. 示例程序`](#-示例程序)<br />
 
 ## 一. 加入依赖JAR文件
 * maven快照版：
@@ -275,3 +276,6 @@ public void login(HttpServletResponse response, String username, String password
 是否是必须参数， 默认是false
 ### 4.枚举 com.cpjit.swagger4j.annotation.DataType
 可用的数据类型
+
+## 六. 示例程序
+* [`Spring MVC`](https://github.com/cpjit/swagger-demo-springmvc)
