@@ -30,7 +30,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONWriter;
 import com.cpjit.swagger4j.APIParseable;
@@ -45,7 +46,9 @@ import freemarker.template.TemplateException;
  * @since 1.2.0
  */
 public class DefaultApiViewWriter implements ApiViewWriter {
-	private final static Logger LOG = Logger.getLogger(DefaultApiViewWriter.class);
+	
+	private final static Logger LOG = LoggerFactory.getLogger(DefaultApiViewWriter.class);
+	
 	private static boolean scanfed = false;
 	
 	protected String getTemplateName() {
@@ -133,7 +136,9 @@ public class DefaultApiViewWriter implements ApiViewWriter {
 	@Override
 	public void writeStatic(HttpServletRequest request, HttpServletResponse response, Properties props) throws IOException {
 		String path = buildResourcePath(request, props);
-		LOG.debug("获取web资源文件： " + path);
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(String.join("", "获取web资源文件： ", path));
+		}
 		String contentType = FileTypeMap.getContentType(path);
 		response.setContentType(contentType);
 		InputStream resource = DefaultApiViewWriter.class.getClassLoader().getResourceAsStream(path);

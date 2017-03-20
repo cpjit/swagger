@@ -25,7 +25,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 查找资源相关的工具方法。
@@ -34,8 +35,8 @@ import org.apache.log4j.Logger;
  * @since 1.2.2
  */
 public final class ResourceUtil {
-	private final static Logger sLogger = Logger.getLogger(ResourceUtil.class);
-	private final static Class<?> sDefaultLoader = ResourceUtil.class;
+	private final static Logger LOG = LoggerFactory.getLogger(ResourceUtil.class);
+	private final static Class<?> DEFAULT_LOADER = ResourceUtil.class;
 	
 	private ResourceUtil() {
 		throw new AssertionError("不允许实例化 " + ResourceUtil.class.getName());
@@ -51,7 +52,7 @@ public final class ResourceUtil {
 		URL url = null;
 		Class<?> l = loader;
 		if(l == null) {
-			l = sDefaultLoader;
+			l = DEFAULT_LOADER;
 		}
 		url = l.getResource("/" + name);
 		if(url == null) {
@@ -66,7 +67,7 @@ public final class ResourceUtil {
 	 * @return 资源文件的URL。
 	 */
 	public static URL getResource(String name) {
-		return getResource(sDefaultLoader, name);
+		return getResource(DEFAULT_LOADER, name);
 	}
 	
 	/**
@@ -93,7 +94,7 @@ public final class ResourceUtil {
 	 * @since 1.0.4
 	 */
 	public static File getResourceAsFile(String name) {
-		return getResourceAsFile(sDefaultLoader, name);
+		return getResourceAsFile(DEFAULT_LOADER, name);
 	}
 	
 	public static InputStream getResourceAsStream(Class<?> loader,String name) {
@@ -106,14 +107,14 @@ public final class ResourceUtil {
 		try {
 			is = Files.newInputStream(Paths.get(url.toURI()));
 		} catch (IOException ioe) {
-			sLogger.error("查找资源文件 " + name + " 发生错误", ioe);
+			LOG.error(String.join("", "查找资源文件 ", name, " 发生错误"), ioe);
 		} catch (URISyntaxException use) {
-			sLogger.error("查找资源文件 " + name + " 发生错误", use);
+			LOG.error(String.join("",  "查找资源文件 ", name, " 发生错误"), use);
 		}
 		return is;
 	}
 	
 	public static InputStream getResourceAsStream(String name) {
-		return getResourceAsStream(sDefaultLoader, name);
+		return getResourceAsStream(DEFAULT_LOADER, name);
 	}
 }
