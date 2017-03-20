@@ -31,7 +31,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONWriter;
 import com.cpjit.swagger4j.annotation.API;
@@ -76,8 +77,8 @@ import com.cpjit.swagger4j.util.ReflectUtils;
  */
 public final class APIParser implements APIParseable {
 	
-	private final static Logger LOG = Logger.getLogger(APIParser.class);
-
+	private final static Logger LOG = LoggerFactory.getLogger(APIParser.class);
+	private final static String DELIMITER = "[;,]";
 	private String host;
 	private String basePath;
 	private String suffix = "";
@@ -93,7 +94,7 @@ public final class APIParser implements APIParseable {
 	 * @see APIParser.Builder
 	 */
 	public final static APIParser newInstance(Properties props) throws IOException {
-		String[] packageToScan = props.getProperty("packageToScan").split(";");
+		String[] packageToScan = props.getProperty("packageToScan").split(DELIMITER);
 		Builder builder = new Builder(props.getProperty("apiHost"), props.getProperty("apiFile"), packageToScan)
 										.basePath(props.getProperty("apiBasePath"))
 										.description(props.getProperty("apiDescription"))
@@ -300,7 +301,9 @@ public final class APIParser implements APIParseable {
 	public void parse() throws Exception {
 		/* 将结果写入文件 */
 		File f = new File(file);
-		LOG.debug("生成的文件保存在=>" + f.getAbsolutePath());
+		if(LOG.isDebugEnabled()) {
+			LOG.debug(String.join("", "生成的文件保存在=>", f.getAbsolutePath()));
+		}
 		JSONWriter writer = new JSONWriter(new FileWriter(f));
 		APIDoc api = (APIDoc) parseAndNotStore();
 		writer.writeObject(api);
@@ -371,9 +374,9 @@ public final class APIParser implements APIParseable {
 		final boolean isMultipart = hasMultipart(service);
 		String url;
 		if("".equals(service.value())) {
-			url = apis.value() + suffix;
+			url = String.join("", apis.value(), suffix);
 		} else {
-			url = apis.value() + "/" + service.value() + suffix;
+			url = String.join("", apis.value(), "/", service.value(), suffix);
 		}
 		Map<String, Path> path = paths.get(url); // get/psot/put/delete
 		if (path == null) {
@@ -423,9 +426,7 @@ public final class APIParser implements APIParseable {
 			Map<String, Object> parameter = new HashMap<String, Object>();
 			if (paramAttr.schema() != null && !paramAttr.schema().trim().equals("")) { // 处理复杂类型的参数
 				if (isMultipart) { // 当请求的Content-Type为multipart/form-data将忽略复杂类型的参数
-					throw new IllegalArgumentException(
-							"请求的Content-Type为multipart/form-data，将忽略复杂类型的请求参数[ "
-									+ paramAttr.schema() + " ]");
+					throw new IllegalArgumentException(String.join("","请求的Content-Type为multipart/form-data，将忽略复杂类型的请求参数[ ",paramAttr.schema()," ]"));
 				}
 				parameter.put("in", "body");
 				parameter.put("name", "body");
@@ -464,11 +465,10 @@ public final class APIParser implements APIParseable {
 				parameter.put("required", paramAttr.required());
 				if (paramAttr.items() != null && !paramAttr.items().trim().equals("")) {
 					if (!requestParamType.equals("array")) {
-						throw new IllegalArgumentException("请求参数 [ "+ paramAttr.name()+ " ]存在可选值(items)的时候，请求参数类型(type)的值只能为array");
+						throw new IllegalArgumentException(String.join("", "请求参数 [ ", paramAttr.name(), " ]存在可选值(items)的时候，请求参数类型(type)的值只能为array"));
 					}
 					Item item = items.get(paramAttr.items().trim());
 					if (item != null) { // 可选值
-	
 						Map<String, Object> i = new HashMap<String, Object>();
 						i.put("type", item.type());
 						i.put("default", item.defaultValue());
