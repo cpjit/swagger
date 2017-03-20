@@ -21,7 +21,17 @@ package com.cpjit.swagger4j;
  * @since 1.0.0
  */
 class Tag {
+	
 	private String name;
+	private String description;
+
+	public Tag() {
+	}
+	
+	public Tag(String name, String description) {
+		this.name = name;
+		this.description = description;
+	}
 
 	public String getName() {
 		return name;
@@ -30,8 +40,6 @@ class Tag {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	private String description;
 
 	public String getDescription() {
 		return description;

@@ -33,7 +33,7 @@ public class Struts2ApiViewWriter extends DefaultApiViewWriter implements ApiVie
 	@Override
 	protected String buildResourcePath(HttpServletRequest request) {
 		String url = request.getParameter("url");
-		String path = "com/cpj/swagger/support/internal/statics/"+url;
+		String path = "com/cpjit/swagger4j/support/internal/statics/"+url;
 		return path;
 	}
 	

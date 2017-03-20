@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -102,11 +103,10 @@ public final class ReflectUtils {
 		if(packageNames.size() < 1) { // 未指定包名
 			return Collections.emptyList();
 		}
-		List<Package> packages = scanPackages(packageNames, recursion);
-		List<String> packNames = new ArrayList<String>();
-		for (Package pk : packages) {
-			packNames.add(pk.getName());
-		}
+		List<String> packNames = scanPackages(packageNames, recursion)
+										.stream()
+										.map(pkg -> pkg.getName())
+										.collect(Collectors.toList());
 		return scanClazzs(packNames);
 	}
 
@@ -145,14 +145,18 @@ public final class ReflectUtils {
 			throw new IllegalArgumentException(basePackage + "不是合法的包名");
 		}
 
-		Package pk = getPackage(basePackage);
+		Package pk = null;
+		try {
+			pk = getPackage(basePackage);
+		} catch (Exception e) {
+		} 
 		if (pk != null) {
 			packages.add(pk);
 		}
 
 		if (recursion && StringUtils.isNotBlank(basePackage)) { // 递归扫描子包
 			try (DirectoryStream<Path> childs = Files.newDirectoryStream(pkFile)) {
-				for(Path child : childs) {
+				childs.forEach(child -> {
 					if(Files.isDirectory(child)) {
 						String childPackage = basePackage + "." + child.getFileName().toString();
 						if(StringUtils.isBlank(basePackage)) { // 默认包
@@ -160,7 +164,7 @@ public final class ReflectUtils {
 						}
 						packages.addAll(scanPackage(childPackage, true));
 					}
-				}
+				});
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
@@ -216,18 +220,12 @@ public final class ReflectUtils {
 	 * @since 1.0.0
 	 */
 	public static List<Package> scanPackages(List<String> packageNames, boolean recursion) {
-		if(packageNames.size() < 1) { // 未指定包名
+		if(packageNames == null || packageNames.size() < 1) { // 未指定包名
 			return Collections.emptyList();
 		}
-		
-		Set<Package> packages = new HashSet<Package>();
-		for (String packName : packageNames) {
-			packages.addAll(scanPackage(packName, recursion));
-		}
-		if(packages.size() < 1) { // 未搜索到包信息
-			return Collections.emptyList();
-		}
-		return new ArrayList<Package>(packages);
+		return packageNames.stream()
+								.flatMap(packName -> scanPackage(packName, recursion).stream())
+								.collect(Collectors.toList());
 	}
 
 	/**
@@ -264,23 +262,17 @@ public final class ReflectUtils {
 		}
 
 		Set<String> clazzNames = new HashSet<String>();
+		String prefix = StringUtils.isBlank(packageName) ? "" : packageName + ".";
 		// 获取包下的Java源文件
-		DirectoryStream<Path> clazzs;
-		try {
-			clazzs = Files.newDirectoryStream(pack, "*.class");
+		try(DirectoryStream<Path> clazzs = Files.newDirectoryStream(pack, "*.class");) {
+			clazzs.forEach(clazz -> {  // 获取包下的全部类名
+				String clazzName = prefix + clazz.getFileName().toString().replace(".class", "");
+				clazzNames.add(clazzName);
+			});
 		} catch (IOException e) {
 			throw new IllegalArgumentException(e);
 		}
 
-		String prefix = packageName + ".";
-		if(StringUtils.isBlank(packageName)) {
-			prefix = "";
-		}
-		for (Path clazz : clazzs) { // 获取包下的全部类名
-			String clazzName = prefix + clazz.getFileName().toString().replace(".class", "");
-			clazzNames.add(clazzName);
-		}
-		
 		if(clazzNames.size() < 1) { // 未查找到类信息
 			return Collections.emptyList();
 		}
@@ -294,25 +286,21 @@ public final class ReflectUtils {
 	 * </p>
 	 * @since 1.2.2
 	 */
-	private static Package getPackage(final String packageName) {
-		Package pk = Package.getPackage(packageName); // 包内不存在package-info.java的时候会返回null。
-		if (pk == null) { // 包内不存在package-info
-			List<String> clazzNames = Collections.emptyList();
-			try {
-				clazzNames = scanClazzName(packageName);
-			} catch (Exception fne) {
-			} 
-			
-			for (String clazzName : clazzNames) {
-				try {
-					Class<?> clazz = Class.forName(clazzName);
-					pk = clazz.getPackage();
-					break;
-				} catch (ClassNotFoundException e) {
-					continue;
-				}
-			}
+	private static Package getPackage(final String packageName) throws FileNotFoundException, IllegalArgumentException {
+		Package pkg = Package.getPackage(packageName);
+		if(pkg == null) { // 包内不存在package-info.class文件
+			pkg = scanClazzName(packageName).stream()
+										.map(clazzName -> {
+											try {
+												return Class.forName(clazzName).getPackage();
+											} catch (ClassNotFoundException e) {
+												return null;
+											}
+										})
+										.filter(pk -> pk != null)
+										.findFirst()
+										.get();
 		}
-		return pk;
+		return pkg;
 	}
 }

@@ -121,7 +121,7 @@ public class DefaultApiViewWriter implements ApiViewWriter {
 			}
 		}
 		String path = uri.substring(uri.indexOf("statics")+7);
-		path = "com/cpj/swagger/support/internal/statics"+path;
+		path = "com/cpjit/swagger4j/support/internal/statics"+path;
 		return path;
 	}
 	

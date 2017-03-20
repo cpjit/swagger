@@ -22,12 +22,13 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -74,6 +75,7 @@ import com.cpjit.swagger4j.util.ReflectUtils;
  * @since 1.0.0
  */
 public final class APIParser implements APIParseable {
+	
 	private final static Logger sLogger = Logger.getLogger(APIParser.class);
 
 	/**
@@ -265,11 +267,18 @@ public final class APIParser implements APIParseable {
 		}
 
 		private License license;
-		public Builder license(License license) {
-			this.license = license;
+
+		/**
+		 * 设置API遵循的协议（如apahce开源协议）
+		 * 
+		 * @param val
+		 *            API遵循的协议（如apahce开源协议）
+		 * @return
+		 */
+		public Builder license(License val) {
+			this.license = val;
 			return this;
 		}
-
 	}
 
 	private APIDocInfo info;
@@ -335,19 +344,11 @@ public final class APIParser implements APIParseable {
 	}
 	
 	private Map<String, Item> parseItem() throws Exception {
-		Map<String, Item> items = new HashMap<String, Item>();
-
-		for (Package pk : packages) {
-			Items items2 = pk.getAnnotation(Items.class);
-			if (items2 == null) {
-				continue;
-			}
-			Item[] is = items2.items();
-			for (Item i : is) {
-				items.put(i.value(), i);
-			}
-		}
-		return items;
+		return packages.stream()
+						.filter(pk -> pk.getAnnotation(Items.class)!=null)
+						.map(pk -> pk.getAnnotation(Items.class))
+						.flatMap(items -> Arrays.asList(items.items()).stream())
+						.collect(Collectors.toMap(item -> item.value(), item -> item));
 	}
 
 	
@@ -507,54 +508,35 @@ public final class APIParser implements APIParseable {
 
 	/**
 	 * 判断接口的请求Content-Type是否为multipart/form-data。
-	 * 
-	 * @param service
-	 * @return
 	 */
 	private boolean hasMultipart(API service) {
-		for (String consume : service.consumes()) {
-			if ("multipart/form-data".equals(consume)) {
-				return true;
-			}
-		}
-		return false;
+		return Arrays.asList(service.consumes())
+						.stream()
+						.filter(consume -> "multipart/form-data".equals(consume))
+						.findFirst()
+						.isPresent();
 	}
 
 	/**
 	 * 解析全部Tag。
-	 * 
 	 * @return 全部Tag。
-	 * @throws Exception
 	 */
 	private List<Tag> parseTag() throws Exception {
-		Set<Tag> tags = new HashSet<Tag>();
-
 		/* since1.2.2 先扫描被@APITag标注了的类 */
-		for(APITag apiTag : scanAPIsAnnotations()) {
-			Tag tag = new Tag();
-			tag.setName(apiTag.value());
-			tag.setDescription(apiTag.description());
-			if(StringUtils.isNotBlank(apiTag.description()) || !tags.contains(tag)) {
-				tags.add(tag);
-			} 
-		}
-		
+		Set<Tag> tagsfromClass = scanAPIsAnnotations().stream()
+								.map(apiTag -> new Tag(apiTag.value(), apiTag.description()))
+								// TODO 这里需要判断吗 ？
+								// .filter(tag -> StringUtils.isNotBlank(tag.getDescription()) && !tags.contains(tag))
+								.collect(Collectors.toSet());
 		/* 扫描package-info上面的@APITags */
-		for (Package pk : packages) {
-			APITags apiTags = pk.getAnnotation(APITags.class);
-			if (apiTags == null) {
-				continue;
-			}
-
-			APITag[] ts = apiTags.tags();
-			for (APITag t : ts) {
-				Tag tag = new Tag();
-				tag.setName(t.value());
-				tag.setDescription(t.description());
-				tags.add(tag);
-			}
-		}
-		return new ArrayList<>(tags);
+		Set<Tag> tagsFromPackage  = packages.stream()
+					.map(pk -> pk.getAnnotation(APITags.class))
+					.filter(apiTags -> apiTags != null)
+					.flatMap(apiTags -> Arrays.asList(apiTags.tags()).stream())
+					.map(apiTag -> new Tag(apiTag.value(), apiTag.description()))
+					.collect(Collectors.toSet());
+		tagsFromPackage.addAll(tagsfromClass);
+		return new ArrayList<>(tagsFromPackage);
 	}
 
 	/**
@@ -623,39 +605,33 @@ public final class APIParser implements APIParseable {
 		return definitions;
 	}
 
-	/**
+	/*
 	 * 扫描所有用注解{@link API}修饰了的方法。
 	 * 
 	 * @return 所有用注解{@link API}修饰了的方法
 	 * @throws Exception
 	 */
 	private List<Method> scanAPIMethod(Class<?> clazz) throws Exception {
-		List<Method> api = new ArrayList<Method>();
+		List<Method> api = Collections.emptyList();
 		APIs apis = clazz.getAnnotation(APIs.class);
 		if (apis != null) {
-			Method[] methods = clazz.getDeclaredMethods();
-			for (Method method : methods) {
-				API service = method.getAnnotation(API.class);
-				if (service != null) {
-					api.add(method);
-				}
-			}
+			api = Arrays.asList(clazz.getDeclaredMethods())
+							.stream()
+							.filter(method -> method.getAnnotation(API.class) != null)
+							.collect(Collectors.toList());
 		}
 		return api;
 	}
 	
 	/*
+	 * 扫描类上面的@APITag
 	 * @since 1.2.2
 	 */
 	private List<APITag> scanAPIsAnnotations() throws Exception {
-		List<APITag> apiTags = new ArrayList<>();
-		List<Class<?>> clazzs = ReflectUtils.scanClazzs(packageToScan, true);
-		for(Class<?> clazz : clazzs) {
-			APITag annotation = clazz.getAnnotation(APITag.class);
-			if( annotation != null) {
-				apiTags.add(annotation);
-			}
-		}
-		return apiTags;
+		return ReflectUtils.scanClazzs(packageToScan, true)
+								.stream()
+								.map(clazz -> clazz.getAnnotation(APITag.class))
+								.filter(apiTag -> apiTag != null)
+								.collect(Collectors.toList());
 	}
 }
