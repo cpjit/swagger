@@ -341,7 +341,7 @@ public final class APIParser implements APIParseable {
 		return packages.stream()
 						.filter(pk -> pk.getAnnotation(Items.class)!=null)
 						.map(pk -> pk.getAnnotation(Items.class))
-						.flatMap(items -> Arrays.asList(items.items()).stream())
+						.flatMap(items -> Arrays.stream(items.items()))
 						.collect(Collectors.toMap(item -> item.value(), item -> item));
 	}
 
@@ -506,8 +506,7 @@ public final class APIParser implements APIParseable {
 	 * 判断接口的请求Content-Type是否为multipart/form-data。
 	 */
 	private boolean hasMultipart(API service) {
-		return Arrays.asList(service.consumes())
-						.stream()
+		return Arrays.stream(service.consumes())
 						.filter(consume -> "multipart/form-data".equals(consume))
 						.findFirst()
 						.isPresent();
@@ -528,7 +527,7 @@ public final class APIParser implements APIParseable {
 		Set<Tag> tagsFromPackage  = packages.stream()
 					.map(pk -> pk.getAnnotation(APITags.class))
 					.filter(apiTags -> apiTags != null)
-					.flatMap(apiTags -> Arrays.asList(apiTags.tags()).stream())
+					.flatMap(apiTags -> Arrays.stream(apiTags.tags()))
 					.map(apiTag -> new Tag(apiTag.value(), apiTag.description()))
 					.collect(Collectors.toSet());
 		tagsFromPackage.addAll(tagsFromClass);
@@ -611,8 +610,7 @@ public final class APIParser implements APIParseable {
 		List<Method> api = Collections.emptyList();
 		APIs apis = clazz.getAnnotation(APIs.class);
 		if (apis != null) {
-			api = Arrays.asList(clazz.getDeclaredMethods())
-							.stream()
+			api = Arrays.stream(clazz.getDeclaredMethods())
 							.filter(method -> method.getAnnotation(API.class) != null)
 							.collect(Collectors.toList());
 		}
