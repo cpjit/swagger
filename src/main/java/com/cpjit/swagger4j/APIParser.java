@@ -22,13 +22,14 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -178,8 +179,6 @@ public final class APIParser implements APIParseable {
 
 		/**
 		 * 构建解析器。
-		 * 
-		 * @return
 		 */
 		public APIParser build() {
 			return new APIParser(this);
@@ -190,7 +189,6 @@ public final class APIParser implements APIParseable {
 		 * 
 		 * @param val
 		 *            API相对于host（API访问地址）的基路径
-		 * @return
 		 */
 		public Builder basePath(String val) {
 			this.basePath = val;
@@ -200,7 +198,6 @@ public final class APIParser implements APIParseable {
 		/**
 		 * 设置请求地址的后缀，如：.do、.action。
 		 * @param suffix 请求地址的后缀
-		 * @return
 		 */
 		public Builder suffix(String suffix) {
 			if(StringUtils.isNotBlank(suffix)) {
@@ -213,7 +210,6 @@ public final class APIParser implements APIParseable {
 		 * 设置API描述
 		 * @param val
 		 *            API描述
-		 * @return
 		 */
 		public Builder description(String val) {
 			this.description = val;
@@ -225,7 +221,6 @@ public final class APIParser implements APIParseable {
 		 * 
 		 * @param val
 		 *            API版本
-		 * @return
 		 */
 		public Builder version(String val) {
 			this.version = val;
@@ -237,7 +232,6 @@ public final class APIParser implements APIParseable {
 		 * 
 		 * @param val
 		 *            API标题
-		 * @return
 		 */
 		public Builder title(String val) {
 			this.title = val;
@@ -249,7 +243,6 @@ public final class APIParser implements APIParseable {
 		 * 
 		 * @param val
 		 *            API开发团队的服务地址
-		 * @return
 		 */
 		public Builder termsOfService(String val) {
 			this.termsOfService = val;
@@ -261,7 +254,6 @@ public final class APIParser implements APIParseable {
 		 * 
 		 * @param val
 		 *            API开发团队的联系人
-		 * @return
 		 */
 		public Builder contact(String val) {
 			this.contact = val;
@@ -273,7 +265,6 @@ public final class APIParser implements APIParseable {
 		 * 
 		 * @param val
 		 *            API遵循的协议（如apahce开源协议）
-		 * @return
 		 */
 		public Builder license(License val) {
 			this.license = val;
@@ -324,7 +315,7 @@ public final class APIParser implements APIParseable {
 		items = parseItem();
 
 		/* 解析全部tag */
-		List<Tag> tags = parseTag();
+		Collection<Tag> tags = parseTag();
 		api.setTags(tags);
 
 		/* 解析全部path */
@@ -516,22 +507,18 @@ public final class APIParser implements APIParseable {
 	 * 解析全部Tag。
 	 * @return 全部Tag。
 	 */
-	private List<Tag> parseTag() throws Exception {
-		/* since1.2.2 先扫描被@APITag标注了的类 */
-		Set<Tag> tagsFromClass = scanAPIsAnnotations().stream()
-								.map(apiTag -> new Tag(apiTag.value(), apiTag.description()))
-								// TODO 这里需要判断吗 ？
-								// .filter(tag -> StringUtils.isNotBlank(tag.getDescription()) && !tags.contains(tag))
-								.collect(Collectors.toSet());
-		/* 扫描package-info上面的@APITags */
-		Set<Tag> tagsFromPackage  = packages.stream()
-					.map(pk -> pk.getAnnotation(APITags.class))
-					.filter(apiTags -> apiTags != null)
-					.flatMap(apiTags -> Arrays.stream(apiTags.tags()))
-					.map(apiTag -> new Tag(apiTag.value(), apiTag.description()))
-					.collect(Collectors.toSet());
-		tagsFromPackage.addAll(tagsFromClass);
-		return new ArrayList<>(tagsFromPackage);
+	private Collection<Tag> parseTag() throws Exception {
+		// since1.2.2 先扫描被@APITag标注了的类
+		Stream<APITag> tagsFromClass = scanAPIsAnnotations().stream();
+		// 扫描package-info上面的@APITags
+		Stream<APITag> tagsFromPackage = packages.stream()
+										.map(pk -> pk.getAnnotation(APITags.class))
+										.filter(apiTags -> apiTags != null)
+										.flatMap(apiTags -> Arrays.stream(apiTags.tags()));
+		return Stream.of(tagsFromClass, tagsFromPackage)
+						.flatMap(stream -> stream)
+						.map(apiTag -> new Tag(apiTag.value(), apiTag.description()))
+						.collect(Collectors.toSet());
 	}
 
 	/**
@@ -544,8 +531,7 @@ public final class APIParser implements APIParseable {
 		Map<String, Object> definitions = new HashMap<String, Object>();
 
 		for (Package pk : packages) {
-			APISchemas apiSchemas = pk
-					.getAnnotation(APISchemas.class);
+			APISchemas apiSchemas = pk.getAnnotation(APISchemas.class);
 			if (apiSchemas == null) {
 				continue;
 			}
@@ -607,14 +593,13 @@ public final class APIParser implements APIParseable {
 	 * @throws Exception
 	 */
 	private List<Method> scanAPIMethod(Class<?> clazz) throws Exception {
-		List<Method> api = Collections.emptyList();
 		APIs apis = clazz.getAnnotation(APIs.class);
-		if (apis != null) {
-			api = Arrays.stream(clazz.getDeclaredMethods())
+		if(apis == null) {
+			return Collections.emptyList();
+		}
+		return Arrays.stream(clazz.getDeclaredMethods())
 							.filter(method -> method.getAnnotation(API.class) != null)
 							.collect(Collectors.toList());
-		}
-		return api;
 	}
 	
 	/*

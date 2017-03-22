@@ -17,7 +17,7 @@
 package com.cpjit.swagger4j;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -124,13 +124,13 @@ class APIDoc {
 		this.basePath = basePath;
 	}
 
-	private List<Tag> tags = new ArrayList<Tag>();
+	private Collection<Tag> tags = new ArrayList<Tag>();
 
-	public List<Tag> getTags() {
+	public Collection<Tag> getTags() {
 		return tags;
 	}
 
-	public void setTags(List<Tag> tags) {
+	public void setTags(Collection<Tag> tags) {
 		this.tags = tags;
 	}
 }
