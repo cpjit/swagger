@@ -340,20 +340,27 @@ public final class APIParser implements APIParseable {
 	/**
 	 * url -> [ path ]
 	 */
-	private Map<String, Map<String, Path>> parsePath() throws Exception,
-			IllegalArgumentException {
+	private Map<String, Map<String, Path>> parsePath() throws Exception {
 		Map<String, Map<String, Path>> paths = new HashMap<String, Map<String, Path>>();
-		List<Class<?>> clazzs = ReflectUtils.scanClazzs(packageToScan, true); // 扫描包以获取包中的类
-		for(Class<?> clazz : clazzs) {
-			APIs apis = clazz.getAnnotation(APIs.class);
-			if(apis == null || apis.hide()) {
-				continue;
-			}
-			List<Method> apiMethods = scanAPIMethod(clazz);
-			for (Method method : apiMethods) {
-				api2Path(method, apis, paths);
-			}
-		}
+//		List<Class<?>> clazzs = ReflectUtils.scanClazzs(packageToScan, true); // 扫描包以获取包中的类
+//		for(Class<?> clazz : clazzs) {
+//			APIs apis = clazz.getAnnotation(APIs.class);
+//			if(apis == null || apis.hide()) {
+//				continue;
+//			}
+//			scanAPIMethod(clazz).stream()
+//								.forEachOrdered(method -> api2Path(method, apis, paths));
+//		}
+		ReflectUtils.scanClazzs(packageToScan, true)
+					.stream()
+					.forEach(clazz -> {
+						APIs apis = clazz.getAnnotation(APIs.class);
+						if(apis == null || apis.hide()) {
+							return;
+						}
+						scanAPIMethod(clazz).stream()
+								.forEach(method -> api2Path(method, apis, paths));
+					});
 		return paths;
 	}
 
@@ -463,27 +470,7 @@ public final class APIParser implements APIParseable {
 						Map<String, Object> i = new HashMap<String, Object>();
 						i.put("type", item.type());
 						i.put("default", item.defaultValue());
-						if (item.type().equals("string")) { // string
-							i.put("enum", item.optionalValue());
-						} else if (item.type().equals("boolean")) { // boolean
-							List<Boolean> bs = new ArrayList<Boolean>();
-							for (String v : item.optionalValue()) {
-								bs.add(Boolean.parseBoolean(v));
-							}
-							i.put("enum", bs);
-						} else if (item.type().equals("integer")) { // integer
-							List<Integer> is = new ArrayList<Integer>();
-							for (String v : item.optionalValue()) {
-								is.add(Integer.parseInt(v));
-							}
-							i.put("enum", is);
-						} else { // double
-							List<Double> ds = new ArrayList<Double>();
-							for (String v : item.optionalValue()) {
-								ds.add(Double.parseDouble(v));
-							}
-							i.put("enum", ds);
-						}
+						i.put("enum", parseOptionalValue(item.type(), item.optionalValue()));
 						parameter.put("items", i);
 					}
 				}
@@ -492,7 +479,25 @@ public final class APIParser implements APIParseable {
 		}
 		return parameters;
 	}
-	
+
+	private Object parseOptionalValue(String type, String[] values) {
+		if (type.equals("string")) { // string
+			return values;
+		} else if (type.equals("boolean")) { // boolean
+			return Arrays.stream(values)
+							.map(s -> Boolean.parseBoolean(s))
+							.collect(Collectors.toList());
+		} else if (type.equals("integer")) { // integer
+			return Arrays.stream(values)
+							.mapToInt(s -> Integer.parseInt(s))
+							.toArray();
+		} else { // double
+			return  Arrays.stream(values)
+							.mapToDouble(s -> Double.parseDouble(s))
+							.toArray();
+		}
+	}
+
 	/**
 	 * 判断接口的请求Content-Type是否为multipart/form-data。
 	 */
@@ -554,29 +559,8 @@ public final class APIParser implements APIParseable {
 					if (prop.required()) { // 为必须参数
 						required.add(prop.value());
 					}
-
 					if (prop.optionalValue().length > 0) { // 可选值
-						if (prop.type().equals("string")) { // string
-							propertie.put("enum", prop.optionalValue());
-						} else if (prop.type().equals("boolean")) { // boolean
-							List<Boolean> bs = new ArrayList<Boolean>();
-							for (String v : prop.optionalValue()) {
-								bs.add(Boolean.parseBoolean(v));
-							}
-							propertie.put("enum", bs);
-						} else if (prop.type().equals("integer")) { // integer
-							List<Integer> is = new ArrayList<Integer>();
-							for (String v : prop.optionalValue()) {
-								is.add(Integer.parseInt(v));
-							}
-							propertie.put("enum", is);
-						} else { // double
-							List<Double> ds = new ArrayList<Double>();
-							for (String v : prop.optionalValue()) {
-								ds.add(Double.parseDouble(v));
-							}
-							propertie.put("enum", ds);
-						}
+						propertie.put("enum", parseOptionalValue(prop.type(), prop.optionalValue()));
 					}
 					properties.put(prop.value(), propertie);
 				}
@@ -592,7 +576,7 @@ public final class APIParser implements APIParseable {
 	 * @return 所有用注解{@link API}修饰了的方法
 	 * @throws Exception
 	 */
-	private List<Method> scanAPIMethod(Class<?> clazz) throws Exception {
+	private List<Method> scanAPIMethod(Class<?> clazz) {
 		APIs apis = clazz.getAnnotation(APIs.class);
 		if(apis == null) {
 			return Collections.emptyList();

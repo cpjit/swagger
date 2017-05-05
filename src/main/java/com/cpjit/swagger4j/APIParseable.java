@@ -21,7 +21,10 @@ package com.cpjit.swagger4j;
  * @since 1.0.0
  */
 public interface APIParseable extends NoStoreableAPIParser {
-	
+
+	@Override
+	Object parseAndNotStore() throws Exception;
+
 	/**
 	 *  解析接口并把结果已JSON格式写入文件。
 	 *  @throws Exception
