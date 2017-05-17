@@ -4,7 +4,7 @@
 	<groupId>com.cpjit</groupId>
 	<artifactId>swagger4j</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0.0-SNAPSHOT</version>
+	<version>2.0.0</version>
 	<name>swagger4j</name>
 	<description>swagger4j通过与swagger ui一起快速为您的web项目产生接口文档，并且支持在线测试接口。swagger4j可以很方便的与struts2、spring mvc、servlet集成使用</description>
 	<url>https://github.com/cpjit/swagger</url>
@@ -110,6 +110,29 @@
 		<defaultGoal>compile</defaultGoal>
 		<plugins>
 			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.3</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<useReleaseProfile>false</useReleaseProfile>
+					<releaseProfiles>release</releaseProfiles>
+					<goals>deploy</goals>
+				</configuration>
+			</plugin>
+
+			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
 					<classesDirectory>target/classes/</classesDirectory>
@@ -186,7 +209,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<skip>true</skip>
+					<skip>false</skip>
 				</configuration>
 			</plugin>
 		</plugins>
