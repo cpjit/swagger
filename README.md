@@ -11,12 +11,12 @@
 [`六. 示例程序`](#六-示例程序)<br />
 
 ## 一. 加入依赖JAR文件
-* maven快照版：
+* maven：
 ```xml
 <dependency>
 	<groupId>com.cpjit</groupId>
 	<artifactId>swagger4j</artifactId>
-	<version>2.0.0-SNAPSHOT</version>
+	<version>2.0.0</version>
 </dependency>
 ```
 
