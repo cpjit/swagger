@@ -28,9 +28,21 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface ApiViewWriter {
 
-	void writeIndex( HttpServletRequest request, HttpServletResponse response, String lang, Properties props) throws IOException;
-	
+	@Deprecated
+	void writeIndex(HttpServletRequest request, HttpServletResponse response, String lang, Properties props) throws IOException;
+
+	/**
+	 * @since 2.0.1
+	 */
+	void writeIndex( HttpServletRequest request, HttpServletResponse response, String lang) throws IOException;
+
+	@Deprecated
 	void writeApis(HttpServletRequest request, HttpServletResponse response, Properties props) throws Exception;
+
+	/**
+	 * @since 2.0.1
+	 */
+	void writeApis(HttpServletRequest request, HttpServletResponse response) throws Exception;
 	
 	@Deprecated
 	void writeStatic(HttpServletRequest request, HttpServletResponse response) throws IOException;

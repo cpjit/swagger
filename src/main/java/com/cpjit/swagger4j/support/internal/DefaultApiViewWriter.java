@@ -29,6 +29,8 @@ import java.util.Properties;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.cpjit.swagger4j.ConfigResolver;
+import com.cpjit.swagger4j.DefaultConfigResolver;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,14 +50,13 @@ import freemarker.template.TemplateException;
 public class DefaultApiViewWriter implements ApiViewWriter {
 	
 	private final static Logger LOG = LoggerFactory.getLogger(DefaultApiViewWriter.class);
-	
 	private static boolean scanfed = false;
-	
+	private ConfigResolver configResolver = new DefaultConfigResolver();
 	protected String getTemplateName() {
 		return "api.ftlh";
 	}
-	
-	
+
+	@Deprecated
 	@Override
 	public void writeIndex(HttpServletRequest request, HttpServletResponse response, String lang, Properties props)
 			throws IOException {
@@ -87,6 +88,12 @@ public class DefaultApiViewWriter implements ApiViewWriter {
 	}
 
 	@Override
+	public void writeIndex(HttpServletRequest request, HttpServletResponse response, String lang) throws IOException {
+		writeIndex(request, response, lang, configResolver.obtainConfig(request));
+	}
+
+	@Deprecated
+	@Override
 	public void writeApis(HttpServletRequest request, HttpServletResponse response, Properties props)
 			throws Exception {
 		APIParseable restParser = APIParser.newInstance(props);
@@ -109,6 +116,11 @@ public class DefaultApiViewWriter implements ApiViewWriter {
 			out.flush();
 			out.close();
 		}
+	}
+
+	@Override
+	public void writeApis(HttpServletRequest request, HttpServletResponse response) throws Exception {
+		writeApis(request, response, configResolver.obtainConfig(request));
 	}
 
 	/**
@@ -175,6 +187,6 @@ public class DefaultApiViewWriter implements ApiViewWriter {
 	@Deprecated
 	@Override
 	public void writeStatic(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		writeStatic(request, response, null);
+		writeStatic(request, response, configResolver.obtainConfig(request));
 	}
 }

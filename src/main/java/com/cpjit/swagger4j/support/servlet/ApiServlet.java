@@ -16,21 +16,16 @@
  */
 package com.cpjit.swagger4j.support.servlet;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import com.cpjit.swagger4j.support.Constants;
+import com.cpjit.swagger4j.support.internal.ApiViewWriter;
+import com.cpjit.swagger4j.support.internal.DefaultApiViewWriter;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-
-import com.cpjit.swagger4j.support.Constants;
-import com.cpjit.swagger4j.support.internal.ApiViewWriter;
-import com.cpjit.swagger4j.support.internal.DefaultApiViewWriter;
-import com.cpjit.swagger4j.util.ResourceUtil;
+import java.io.IOException;
 
 /**
  * @author yonghuan
@@ -40,19 +35,8 @@ import com.cpjit.swagger4j.util.ResourceUtil;
 public class ApiServlet extends HttpServlet implements Constants {
 	
 	private ApiViewWriter apiViewWriter = new DefaultApiViewWriter();
-	private Properties props = new Properties();
-	
 	@Override
-	public void init() throws ServletException {
-		InputStream is = ResourceUtil.getResourceAsStream("swagger.properties");
-		try {
-			props.load(is);
-		} catch (IOException ioe) {
-			throw new ServletException(ioe);
-		}
-	}
-	
-	@Override
+
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String uri = req.getRequestURI();
 		if(uri.matches(".*/api/index(/?)(!/)*")) {
@@ -73,35 +57,18 @@ public class ApiServlet extends HttpServlet implements Constants {
 		if(StringUtils.isBlank(lang)) {
 			lang = DEFAULT_LANG;
 		}
-		
-		String suffix = props.getProperty("suffix");
-		if(StringUtils.isBlank(suffix)) {
-			suffix = "";
-		}
-		props.put("suffix", suffix);
-		apiViewWriter.writeIndex(request, response, lang, props);
+		apiViewWriter.writeIndex(request, response, lang);
 	}
 	
 	/*
 	 * @since 1.2.0
 	 */
 	private void queryStatic(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		apiViewWriter.writeStatic(request, response, props);
+		apiViewWriter.writeStatic(request, response);
 	}
 	
 	private void queryApi(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		Properties props = new Properties();
-		InputStream is = ResourceUtil.getResourceAsStream("swagger.properties");
-		props.load(is);
-		String path = request.getContextPath();
-		String host = request.getServerName() + ":" + request.getServerPort() + path;
-		props.setProperty("apiHost", host);
-		String apiFile = props.getProperty("apiFile");
-		if(StringUtils.isBlank(apiFile)) {
-			apiFile = DEFAULT_API_FILE;
-		}
-		String apiFilePath = request.getServletContext().getRealPath(apiFile);
-		props.setProperty("apiFile", apiFilePath);
-		apiViewWriter.writeApis(request, response, props);
+		apiViewWriter.writeApis(request, response);
 	}
+
 }

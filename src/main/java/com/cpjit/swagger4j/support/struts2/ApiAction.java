@@ -90,7 +90,6 @@ public class ApiAction extends ActionSupport implements Constants {
 		apiViewWriter.writeStatic(request, response, loadSettings(request));
 	}
 
-
 	private Properties loadSettings(HttpServletRequest request) throws IOException {
 		Properties props = new Properties();
 		InputStream is = ResourceUtil.getResourceAsStream("swagger.properties");
