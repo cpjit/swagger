@@ -475,6 +475,9 @@ public final class APIParser implements APIParseable {
 					}
 				}
 			}
+			if(StringUtils.isNotBlank(paramAttr.defaultValue())) {
+				parameter.put("defaultValue", paramAttr.defaultValue());
+			}
 			parameters.add(parameter);
 		}
 		return parameters;

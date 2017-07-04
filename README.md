@@ -16,7 +16,7 @@
 <dependency>
 	<groupId>com.cpjit</groupId>
 	<artifactId>swagger4j</artifactId>
-	<version>2.0.0</version>
+	<version>2.1.0</version>
 </dependency>
 ```
 
@@ -274,6 +274,8 @@ public void login(HttpServletResponse response, String username, String password
 参数说明
 #### `required`
 是否是必须参数， 默认是false
+### `defaultValue`
+2.1.0引入的新属性，用于指定参数的默认值。
 ### 4.枚举 com.cpjit.swagger4j.annotation.DataType
 可用的数据类型
 

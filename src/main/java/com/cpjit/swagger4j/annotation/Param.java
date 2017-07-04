@@ -171,4 +171,11 @@ public @interface Param {
 	 * @see APISchema
 	 * */
 	String schema() default "";
+
+	/**
+	 * 默认值。
+	 * @since 2.1.0
+	 */
+	String defaultValue() default "";
+
 }

@@ -35,8 +35,8 @@ import java.io.IOException;
 public class ApiServlet extends HttpServlet implements Constants {
 	
 	private ApiViewWriter apiViewWriter = new DefaultApiViewWriter();
-	@Override
 
+	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String uri = req.getRequestURI();
 		if(uri.matches(".*/api/index(/?)(!/)*")) {
