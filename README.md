@@ -79,6 +79,7 @@ devMode=true
 		<tr><th>apiBasePath</th><th>接口基路径</th></tr>
 		<tr><th>devMode</th><th>是否启用开发模式，如果开启则每次获取接口文档的时候都会扫描类</th></tr>
 		<tr><th>suffix</th><th>接口请求地址后缀，如.action</th></tr>
+		<tr><th>disabled</th><th>是否关闭swagger4j，一般用于生产环境</th></tr>
 	</tbody>
 </table>
 
