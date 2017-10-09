@@ -39,15 +39,15 @@ import com.opensymphony.xwork2.inject.Inject;
  */
 @SuppressWarnings("serial")
 public class ApiAction extends ActionSupport implements Constants {
-	
+
 	@Inject("struts.action.extension")
 	private String actionExtension;
-	
+
 	@Inject("struts.devMode")
 	private String devMode;
-	
+
 	private ApiViewWriter apiViewWriter = new Struts2ApiViewWriter();
-	
+
 	@Override
 	public String execute() throws Exception {
 		HttpServletRequest request = ServletActionContext.getRequest();
@@ -61,7 +61,7 @@ public class ApiAction extends ActionSupport implements Constants {
 	public void toIndex() throws Exception {
 		index();
 	}
-	
+
 	/**
 	 * @since 1.2.0
 	 * @throws Exception
@@ -75,12 +75,12 @@ public class ApiAction extends ActionSupport implements Constants {
 		Properties props = loadSettings(request);
 		apiViewWriter.writeIndex(request, ServletActionContext.getResponse(), lang, props);
 	}
-	
+
 	private String url;
 	public void setUrl(String url) {
 		this.url = url;
 	}
-	
+
 	/**
 	 * @since 1.2.0
 	 */

@@ -22,9 +22,15 @@ package com.cpjit.swagger4j.support;
  */
 public interface Constants {
 
-	/** 默认语言 */
-	String DEFAULT_LANG = "zh-cn";
-	/** 生成文件的默认保存地址 */
-	String DEFAULT_API_FILE = "/WEB-INF/apis.json";
-	
+    /**
+     * 默认语言
+     */
+    String DEFAULT_LANG = "zh-cn";
+    /**
+     * 生成文件的默认保存地址
+     */
+    String DEFAULT_API_FILE = "/WEB-INF/apis.json";
+
+    String DISABLED = "disabled";
+
 }

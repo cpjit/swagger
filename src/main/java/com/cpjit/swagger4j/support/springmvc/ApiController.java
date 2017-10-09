@@ -35,19 +35,19 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 @RequestMapping("/api")
 public class ApiController implements InitializingBean, Constants {
-	
+
 	private ApiViewWriter apiViewWriter = new DefaultApiViewWriter();
 
 	@RequestMapping(value = "index", method = RequestMethod.GET)
 	public void index(HttpServletRequest request,HttpServletResponse response,  @RequestParam(defaultValue = DEFAULT_LANG) String lang) throws Exception {
 		apiViewWriter.writeIndex(request, response, lang);
 	}
-	
+
 	@RequestMapping(value="", method=RequestMethod.GET)
 	public void queryApi(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		apiViewWriter.writeApis(request, response);
 	}
-	
+
 	/**
 	 * @since 1.2.0
 	 */
