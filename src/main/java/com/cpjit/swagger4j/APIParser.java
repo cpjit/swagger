@@ -20,6 +20,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -291,11 +294,11 @@ public final class APIParser implements APIParseable {
 	@Override
 	public void parse() throws Exception {
 		/* 将结果写入文件 */
-		File f = new File(file);
+		java.nio.file.Path f = Paths.get(file);
 		if(LOG.isDebugEnabled()) {
-			LOG.debug(String.join("", "生成的文件保存在=>", f.getAbsolutePath()));
+			LOG.debug(String.join("", "生成的文件保存在=>", f.toString()));
 		}
-		JSONWriter writer = new JSONWriter(new FileWriter(f));
+		JSONWriter writer = new JSONWriter(Files.newBufferedWriter(f, StandardCharsets.UTF_8));
 		APIDoc api = (APIDoc) parseAndNotStore();
 		writer.writeObject(api);
 		writer.flush();
