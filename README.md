@@ -16,7 +16,7 @@
 <dependency>
 	<groupId>com.cpjit</groupId>
 	<artifactId>swagger4j</artifactId>
-	<version>2.1.0</version>
+	<version>2.1.2</version>
 </dependency>
 ```
 
