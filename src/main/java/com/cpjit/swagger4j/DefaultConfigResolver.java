@@ -34,7 +34,7 @@ public class DefaultConfigResolver implements ConfigResolver {
 
     public final static String DEFAULT_CONFIG_FILE = "swagger.properties";
     private String configFile = DEFAULT_CONFIG_FILE;
-    private AtomicReference<Properties> config = new AtomicReference();
+    private AtomicReference<Properties> config = new AtomicReference<>();
 
     public DefaultConfigResolver() {
     }

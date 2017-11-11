@@ -44,12 +44,12 @@ public final class ResourceUtil {
 	
 	/**
 	 * 根据资源文件名获取资源文件的URL。
-	 * @param loader
+	 * @param loader loader
 	 * @param name 资源文件名
 	 * @return 资源文件的URL。
 	 */
 	public static URL getResource(Class<?> loader,String name) {
-		URL url = null;
+		URL url;
 		Class<?> l = loader;
 		if(l == null) {
 			l = DEFAULT_LOADER;
@@ -89,7 +89,7 @@ public final class ResourceUtil {
 	
 	/**
 	 * 根据资源文件名获取资源文件。
-	 * @param name
+	 * @param name name
 	 * @return 资源文件
 	 * @since 1.0.4
 	 */
@@ -106,10 +106,8 @@ public final class ResourceUtil {
 		InputStream is = null;
 		try {
 			is = Files.newInputStream(Paths.get(url.toURI()));
-		} catch (IOException ioe) {
-			LOG.error(String.join("", "查找资源文件 ", name, " 发生错误"), ioe);
-		} catch (URISyntaxException use) {
-			LOG.error(String.join("",  "查找资源文件 ", name, " 发生错误"), use);
+		} catch (Exception e) {
+			LOG.error(String.join("", "查找资源文件 ", name, " 发生错误"), e);
 		}
 		return is;
 	}

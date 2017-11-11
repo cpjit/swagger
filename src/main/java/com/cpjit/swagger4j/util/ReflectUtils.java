@@ -24,11 +24,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,7 +61,7 @@ public final class ReflectUtils {
 			return Collections.emptyList();
 		}
 		
-		Set<Class<?>> clazzs = new HashSet<Class<?>>();
+		Set<Class<?>> clazzs = new HashSet<>();
 		for (String packName : packNames) {
 			List<String> clazzNames = scanClazzName(packName);
 			for (String clazzName : clazzNames) { // 获取包下的全部类
@@ -76,7 +72,7 @@ public final class ReflectUtils {
 		if(clazzs.size() < 1) { // 未搜索到类
 			return Collections.emptyList();
 		}
-		return new ArrayList<Class<?>>(clazzs);
+		return new ArrayList<>(clazzs);
 	}
 
 	/**
@@ -105,7 +101,7 @@ public final class ReflectUtils {
 		}
 		List<String> packNames = scanPackages(packageNames, recursion)
 										.stream()
-										.map(pkg -> pkg.getName())
+										.map(Package::getName)
 										.collect(Collectors.toList());
 		return scanClazzs(packNames);
 	}
@@ -113,7 +109,7 @@ public final class ReflectUtils {
 	/**
 	 * 扫描包及其子包。
 	 * 
-	 * @param basePackage
+	 * @param basePackage basePackage
 	 * @param recursion
 	 *            是否递归扫描子包
 	 * @return 	搜索到的包信息，返回值永远都不为null。
@@ -128,14 +124,14 @@ public final class ReflectUtils {
 			return Collections.emptyList();
 		}
 		
-		Set<Package> packages = new HashSet<Package>();
+		Set<Package> packages = new HashSet<>();
 		String pack2path = basePackage.replaceAll("\\.", "/");
 		URL url = ResourceUtil.getResource(pack2path);
 		if(url == null) { // 包不存在
 			return Collections.emptyList();
 		}
 		
-		Path pkFile = null;
+		Path pkFile;
 		try {
 			pkFile = Paths.get(url.toURI());
 		} catch (URISyntaxException e) {
@@ -148,7 +144,7 @@ public final class ReflectUtils {
 		Package pk = null;
 		try {
 			pk = getPackage(basePackage);
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 		} 
 		if (pk != null) {
 			packages.add(pk);
@@ -173,13 +169,13 @@ public final class ReflectUtils {
 			return Collections.emptyList();
 		}
 		
-		return new ArrayList<Package>(packages);
+		return new ArrayList<>(packages);
 	}
 
 	/**
 	 * 扫描包信息（不会递归扫描子包）
 	 * 
-	 * @param packageName
+	 * @param packageName packageName
 	 * @return 	搜索到的包信息，返回值永远都不为null。
 	 * 			以下情况将返回长度为0的列表：
 	 * 			<li>所有指定的包都不存在</li>
@@ -194,7 +190,7 @@ public final class ReflectUtils {
 	/**
 	 * 根据包名扫描包信息。
 	 * 
-	 * @param packageNames
+	 * @param packageNames packageNames
 	 * @return 	搜索到的包信息，返回值永远都不为null。
 	 * 			以下情况将返回长度为0的列表：
 	 * 			<li>所有指定的包都不存在</li>
@@ -209,7 +205,7 @@ public final class ReflectUtils {
 	/**
 	 * 根据包名扫描包信息。
 	 * 
-	 * @param packageNames
+	 * @param packageNames packageNames
 	 * @param recursion
 	 *            是否递归扫描子包
 	 * @return 	搜索到的包信息，返回值永远都不为null。
@@ -231,7 +227,7 @@ public final class ReflectUtils {
 	/**
 	 * 扫描包下所有类的类全名。
 	 * 
-	 * @param packageName
+	 * @param packageName packageName
 	 * @return 指定包下面的全部类名，永远都不返回null。
 	 * 		当出现以下情况的时候将返回长度为0的列表：
 	 * 		<li>参数packNames的长度为0</li>
@@ -261,10 +257,10 @@ public final class ReflectUtils {
 			throw new IllegalArgumentException("[" + packageName + "]不是合法的包名");
 		}
 
-		Set<String> clazzNames = new HashSet<String>();
+		Set<String> clazzNames = new HashSet<>();
 		String prefix = StringUtils.isBlank(packageName) ? "" : packageName + ".";
 		// 获取包下的Java源文件
-		try(DirectoryStream<Path> clazzs = Files.newDirectoryStream(pack, "*.class");) {
+		try(DirectoryStream<Path> clazzs = Files.newDirectoryStream(pack, "*.class")) {
 			clazzs.forEach(clazz -> {  // 获取包下的全部类名
 				String clazzName = prefix + clazz.getFileName().toString().replace(".class", "");
 				clazzNames.add(clazzName);
@@ -276,7 +272,7 @@ public final class ReflectUtils {
 		if(clazzNames.size() < 1) { // 未查找到类信息
 			return Collections.emptyList();
 		}
-		return new ArrayList<String>(clazzNames);
+		return new ArrayList<>(clazzNames);
 	}
 	
 	/**
@@ -289,7 +285,7 @@ public final class ReflectUtils {
 	private static Package getPackage(final String packageName) throws FileNotFoundException, IllegalArgumentException {
 		Package pkg = Package.getPackage(packageName);
 		if(pkg == null) { // 包内不存在package-info.class文件
-			pkg = scanClazzName(packageName).stream()
+			Optional<Package> optionalPkg = scanClazzName(packageName).stream()
 										.map(clazzName -> {
 											try {
 												return Class.forName(clazzName).getPackage();
@@ -297,9 +293,11 @@ public final class ReflectUtils {
 												return null;
 											}
 										})
-										.filter(pk -> pk != null)
-										.findFirst()
-										.get();
+										.filter(Objects::nonNull)
+										.findFirst();
+			if(optionalPkg.isPresent()) {
+				return optionalPkg.get();
+			}
 		}
 		return pkg;
 	}

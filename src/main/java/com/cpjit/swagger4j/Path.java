@@ -28,10 +28,10 @@ class Path {
 	private String summary;
 	private String description;
 	private String operationId;
-	private List<String> tags = new ArrayList<String>();
-	private List<String> consumes = new ArrayList<String>();
-	private List<String> produces = new ArrayList<String>();
-	private List<Map<String, Object>> parameters = new ArrayList<Map<String, Object>>();
+	private List<String> tags = new ArrayList<>();
+	private List<String> consumes = new ArrayList<>();
+	private List<String> produces = new ArrayList<>();
+	private List<Map<String, Object>> parameters = new ArrayList<>();
 	private boolean deprecated;
 	
 	public String getSummary() {

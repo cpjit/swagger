@@ -16,41 +16,21 @@
  */
 package com.cpjit.swagger4j;
 
-import java.io.File;
-import java.io.FileWriter;
+import com.alibaba.fastjson.JSONWriter;
+import com.cpjit.swagger4j.annotation.*;
+import com.cpjit.swagger4j.util.ReflectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.alibaba.fastjson.JSONWriter;
-import com.cpjit.swagger4j.annotation.API;
-import com.cpjit.swagger4j.annotation.APISchema;
-import com.cpjit.swagger4j.annotation.APISchemaPropertie;
-import com.cpjit.swagger4j.annotation.APISchemas;
-import com.cpjit.swagger4j.annotation.APITag;
-import com.cpjit.swagger4j.annotation.APITags;
-import com.cpjit.swagger4j.annotation.APIs;
-import com.cpjit.swagger4j.annotation.DataType;
-import com.cpjit.swagger4j.annotation.Item;
-import com.cpjit.swagger4j.annotation.Items;
-import com.cpjit.swagger4j.annotation.Param;
-import com.cpjit.swagger4j.util.ReflectUtils;
 
 /**
  * 接口解析器。
@@ -94,7 +74,6 @@ public final class APIParser implements APIParseable {
 	/**
 	 * 创建一个解析器。
 	 * @param props properties。
-	 * @throws IOException
 	 * @see APIParser.Builder
 	 */
 	public final static APIParser newInstance(Properties props) throws IOException {
@@ -344,7 +323,7 @@ public final class APIParser implements APIParseable {
 	 * url -> [ path ]
 	 */
 	private Map<String, Map<String, Path>> parsePath() throws Exception {
-		Map<String, Map<String, Path>> paths = new HashMap<String, Map<String, Path>>();
+		Map<String, Map<String, Path>> paths = new HashMap<>();
 //		List<Class<?>> clazzs = ReflectUtils.scanClazzs(packageToScan, true); // 扫描包以获取包中的类
 //		for(Class<?> clazz : clazzs) {
 //			APIs apis = clazz.getAnnotation(APIs.class);
@@ -355,13 +334,12 @@ public final class APIParser implements APIParseable {
 //								.forEachOrdered(method -> api2Path(method, apis, paths));
 //		}
 		ReflectUtils.scanClazzs(packageToScan, true)
-					.stream()
 					.forEach(clazz -> {
 						APIs apis = clazz.getAnnotation(APIs.class);
 						if(apis == null || apis.hide()) {
 							return;
 						}
-						scanAPIMethod(clazz).stream()
+						scanAPIMethod(clazz)
 								.forEach(method -> api2Path(method, apis, paths));
 					});
 		return paths;
@@ -381,7 +359,7 @@ public final class APIParser implements APIParseable {
 		}
 		Map<String, Path> path = paths.get(url); // get/psot/put/delete
 		if (path == null) {
-			path = new HashMap<String, Path>();
+			path = new HashMap<>();
 			paths.put(url, path);
 		}
 
@@ -406,12 +384,12 @@ public final class APIParser implements APIParseable {
 			if(ns.startsWith("/")) {
 				ns = ns.substring(1);
 			}
-			tags = Arrays.asList(ns);
+			tags = Collections.singletonList(ns);
 		}
 		p.setTags(tags);
 		p.setSummary(service.summary());
 		if (isMultipart) { // multipart/form-data
-			p.setConsumes(Arrays.asList("multipart/form-data"));
+			p.setConsumes(Collections.singletonList("multipart/form-data"));
 		} else {
 			p.setConsumes(Arrays.asList(service.consumes()));
 		}
@@ -421,17 +399,17 @@ public final class APIParser implements APIParseable {
 	}
 	
 	private List<Map<String, Object>> parseParameters(API service, boolean isMultipart) {
-		List<Map<String, Object>> parameters = new ArrayList<Map<String, Object>>(); // 请求参数
-		/** 解析参数，优先使用schema */
+		List<Map<String, Object>> parameters = new ArrayList<>(); // 请求参数
+		/* 解析参数，优先使用schema */
 		for (Param paramAttr : service.parameters()) {
-			Map<String, Object> parameter = new HashMap<String, Object>();
+			Map<String, Object> parameter = new HashMap<>();
 			if (paramAttr.schema() != null && !paramAttr.schema().trim().equals("")) { // 处理复杂类型的参数
 				if (isMultipart) { // 当请求的Content-Type为multipart/form-data将忽略复杂类型的参数
 					throw new IllegalArgumentException(String.join("","请求的Content-Type为multipart/form-data，将忽略复杂类型的请求参数[ ",paramAttr.schema()," ]"));
 				}
 				parameter.put("in", "body");
 				parameter.put("name", "body");
-				Map<String, Object> ref = new HashMap<String, Object>();
+				Map<String, Object> ref = new HashMap<>();
 				ref.put("$ref", "#/definitions/" + paramAttr.schema());
 				parameter.put("schema", ref);
 			} else { // 简单类型的参数
@@ -470,7 +448,7 @@ public final class APIParser implements APIParseable {
 					}
 					Item item = items.get(paramAttr.items().trim());
 					if (item != null) { // 可选值
-						Map<String, Object> i = new HashMap<String, Object>();
+						Map<String, Object> i = new HashMap<>();
 						i.put("type", item.type());
 						i.put("default", item.defaultValue());
 						i.put("enum", parseOptionalValue(item.type(), item.optionalValue()));
@@ -491,15 +469,15 @@ public final class APIParser implements APIParseable {
 			return values;
 		} else if (type.equals("boolean")) { // boolean
 			return Arrays.stream(values)
-							.map(s -> Boolean.parseBoolean(s))
+							.map(Boolean::parseBoolean)
 							.collect(Collectors.toList());
 		} else if (type.equals("integer")) { // integer
 			return Arrays.stream(values)
-							.mapToInt(s -> Integer.parseInt(s))
+							.mapToInt(Integer::parseInt)
 							.toArray();
 		} else { // double
 			return  Arrays.stream(values)
-							.mapToDouble(s -> Double.parseDouble(s))
+							.mapToDouble(Double::parseDouble)
 							.toArray();
 		}
 	}
@@ -509,9 +487,7 @@ public final class APIParser implements APIParseable {
 	 */
 	private boolean hasMultipart(API service) {
 		return Arrays.stream(service.consumes())
-						.filter(consume -> "multipart/form-data".equals(consume))
-						.findFirst()
-						.isPresent();
+						.anyMatch(consume -> "multipart/form-data".equals(consume));
 	}
 
 	/**
@@ -524,7 +500,7 @@ public final class APIParser implements APIParseable {
 		// 扫描package-info上面的@APITags
 		Stream<APITag> tagsFromPackage = packages.stream()
 										.map(pk -> pk.getAnnotation(APITags.class))
-										.filter(apiTags -> apiTags != null)
+										.filter(Objects::nonNull)
 										.flatMap(apiTags -> Arrays.stream(apiTags.tags()));
 		return Stream.of(tagsFromClass, tagsFromPackage)
 						.flatMap(stream -> stream)
@@ -536,10 +512,9 @@ public final class APIParser implements APIParseable {
 	 * 解析全部definition。
 	 * 
 	 * @return 全部definition
-	 * @throws Exception
 	 */
 	private Map<String, Object> parseDefinition() throws Exception {
-		Map<String, Object> definitions = new HashMap<String, Object>();
+		Map<String, Object> definitions = new HashMap<>();
 
 		for (Package pk : packages) {
 			APISchemas apiSchemas = pk.getAnnotation(APISchemas.class);
@@ -548,14 +523,14 @@ public final class APIParser implements APIParseable {
 			}
 			APISchema[] schemas = apiSchemas.schemas();
 			for (APISchema schema : schemas) {
-				Map<String, Object> definition = new HashMap<String, Object>();
+				Map<String, Object> definition = new HashMap<>();
 				definition.put("type", schema.type());
-				List<String> required = new ArrayList<String>();
+				List<String> required = new ArrayList<>();
 				definition.put("required", required);
 				APISchemaPropertie[] props = schema.properties();
-				Map<String, Map<String, Object>> properties = new HashMap<String, Map<String, Object>>();
+				Map<String, Map<String, Object>> properties = new HashMap<>();
 				for (APISchemaPropertie prop : props) {
-					Map<String, Object> propertie = new HashMap<String, Object>();
+					Map<String, Object> propertie = new HashMap<>();
 					definition.put("properties", properties);
 
 					propertie.put("type", prop.type());
@@ -600,7 +575,7 @@ public final class APIParser implements APIParseable {
 		return ReflectUtils.scanClazzs(packageToScan, true)
 								.stream()
 								.map(clazz -> clazz.getAnnotation(APITag.class))
-								.filter(apiTag -> apiTag != null)
+								.filter(Objects::nonNull)
 								.collect(Collectors.toList());
 	}
 }

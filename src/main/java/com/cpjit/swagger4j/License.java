@@ -29,8 +29,6 @@ public class License {
 	public License() {}
 	
 	/**
-	 * @param name
-	 * @param url
 	 * @since 1.0.3
 	 */
 	public License(String name, String url) {

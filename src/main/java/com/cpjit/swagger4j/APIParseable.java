@@ -27,7 +27,6 @@ public interface APIParseable extends NoStoreableAPIParser {
 
 	/**
 	 *  解析接口并把结果已JSON格式写入文件。
-	 *  @throws Exception
 	 */
 	void parse() throws Exception;
 }

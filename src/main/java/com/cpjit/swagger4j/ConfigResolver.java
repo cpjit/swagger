@@ -24,7 +24,7 @@ import java.util.Properties;
  * 配置信息解析器。
  * @author yonghuan
  * @since 2.0.1
- * @see {@link DefaultConfigResolver}
+ * @see DefaultConfigResolver
  */
 public interface ConfigResolver {
 

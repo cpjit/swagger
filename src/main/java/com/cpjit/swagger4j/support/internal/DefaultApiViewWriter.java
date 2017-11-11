@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.cpjit.swagger4j.ConfigResolver;
 import com.cpjit.swagger4j.DefaultConfigResolver;
 import com.cpjit.swagger4j.support.Constants;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +53,7 @@ import freemarker.template.TemplateException;
 public class DefaultApiViewWriter implements ApiViewWriter {
 
     private final static Logger LOG = LoggerFactory.getLogger(DefaultApiViewWriter.class);
-    private static boolean scanfed = false;
+    private static AtomicBoolean scanfed = new AtomicBoolean();
     private ConfigResolver configResolver = new DefaultConfigResolver();
 
     protected String getTemplateName() {
@@ -118,9 +120,9 @@ public class DefaultApiViewWriter implements ApiViewWriter {
             writer.flush();
             writer.close();
         } else {
-            if (!scanfed) {
+            if (!scanfed.get()) {
                 restParser.parse();
-                scanfed = true;
+                scanfed.set(true);
             }
             byte[] bs = Files.readAllBytes(Paths.get(props.getProperty("apiFile")));
             OutputStream out = response.getOutputStream();
@@ -175,24 +177,14 @@ public class DefaultApiViewWriter implements ApiViewWriter {
         try {
             out = response.getOutputStream();
             byte[] buff = new byte[512];
-            int len = -1;
+            int len;
             while ((len = resource.read(buff)) != -1) {
                 out.write(buff, 0, len);
             }
             out.flush();
         } finally {
-            try {
-                if (resource != null) {
-                    resource.close();
-                }
-            } catch (IOException e) {
-            }
-            try {
-                if (out != null) {
-                    out.close();
-                }
-            } catch (IOException e) {
-            }
+            IOUtils.closeQuietly(resource);
+            IOUtils.closeQuietly(out);
         }
     }
 
