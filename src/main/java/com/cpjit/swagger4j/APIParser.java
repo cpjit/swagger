@@ -16,21 +16,46 @@
  */
 package com.cpjit.swagger4j;
 
-import com.alibaba.fastjson.JSONWriter;
-import com.cpjit.swagger4j.annotation.*;
-import com.cpjit.swagger4j.util.ReflectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.core.type.ClassMetadata;
+import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
+
+import com.alibaba.fastjson.JSONWriter;
+import com.cpjit.swagger4j.annotation.API;
+import com.cpjit.swagger4j.annotation.APISchema;
+import com.cpjit.swagger4j.annotation.APISchemaPropertie;
+import com.cpjit.swagger4j.annotation.APISchemas;
+import com.cpjit.swagger4j.annotation.APITag;
+import com.cpjit.swagger4j.annotation.APITags;
+import com.cpjit.swagger4j.annotation.APIs;
+import com.cpjit.swagger4j.annotation.DataType;
+import com.cpjit.swagger4j.annotation.Item;
+import com.cpjit.swagger4j.annotation.Items;
+import com.cpjit.swagger4j.annotation.Param;
 
 /**
  * 接口解析器。
@@ -62,6 +87,8 @@ import java.util.stream.Stream;
 public final class APIParser implements APIParseable {
 	
 	private final static Logger LOG = LoggerFactory.getLogger(APIParser.class);
+	private final ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
+	private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(this.resourcePatternResolver);
 	private final static String DELIMITER = "[;,]";
 	private String host;
 	private String basePath;
@@ -94,7 +121,9 @@ public final class APIParser implements APIParseable {
 		this.file = builder.file;
 		this.packageToScan = builder.packageToScan;
 		try {
-			packages = ReflectUtils.scanPackages(this.packageToScan, true);
+			packages = scanClass().stream()
+							.map(Class::getPackage)
+							.collect(Collectors.toSet());
 		} catch (Exception e) {
 			throw new IllegalStateException("扫描包信息失败", e);
 		}
@@ -268,7 +297,7 @@ public final class APIParser implements APIParseable {
 		return packageToScan;
 	}
 
-	private List<Package> packages;
+	private Set<Package> packages;
 
 	@Override
 	public void parse() throws Exception {
@@ -333,8 +362,7 @@ public final class APIParser implements APIParseable {
 //			scanAPIMethod(clazz).stream()
 //								.forEachOrdered(method -> api2Path(method, apis, paths));
 //		}
-		ReflectUtils.scanClazzs(packageToScan, true)
-					.forEach(clazz -> {
+		scanClass().forEach(clazz -> {
 						APIs apis = clazz.getAnnotation(APIs.class);
 						if(apis == null || apis.hide()) {
 							return;
@@ -496,12 +524,17 @@ public final class APIParser implements APIParseable {
 	 */
 	private Collection<Tag> parseTag() throws Exception {
 		// since1.2.2 先扫描被@APITag标注了的类
-		Stream<APITag> tagsFromClass = scanAPIsAnnotations().stream();
+		Stream<APITag> tagsFromClass = scanClass()
+											.stream()
+											.map(clazz -> clazz.getAnnotation(APITag.class))
+											.filter(Objects::nonNull)
+											.collect(Collectors.toList())
+											.stream();
 		// 扫描package-info上面的@APITags
 		Stream<APITag> tagsFromPackage = packages.stream()
-										.map(pk -> pk.getAnnotation(APITags.class))
-										.filter(Objects::nonNull)
-										.flatMap(apiTags -> Arrays.stream(apiTags.tags()));
+											.map(pk -> pk.getAnnotation(APITags.class))
+											.filter(Objects::nonNull)
+											.flatMap(apiTags -> Arrays.stream(apiTags.tags()));
 		return Stream.of(tagsFromClass, tagsFromPackage)
 						.flatMap(stream -> stream)
 						.map(apiTag -> new Tag(apiTag.value(), apiTag.description()))
@@ -567,15 +600,28 @@ public final class APIParser implements APIParseable {
 							.collect(Collectors.toList());
 	}
 	
-	/*
-	 * 扫描类上面的@APITag
-	 * @since 1.2.2
-	 */
-	private List<APITag> scanAPIsAnnotations() throws Exception {
-		return ReflectUtils.scanClazzs(packageToScan, true)
-								.stream()
-								.map(clazz -> clazz.getAnnotation(APITag.class))
-								.filter(Objects::nonNull)
-								.collect(Collectors.toList());
+	
+	private List<Class<?>> scanClass() {
+		List<Class<?>> classes = new ArrayList<>();
+		for(String pkg : packageToScan) {
+			String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + "/" + pkg.replaceAll("\\.", "/")+"/**/*.class";
+			Resource[] resources = null;
+			try {
+				resources = resourcePatternResolver.getResources(pattern);
+			} catch (IOException e) {
+				continue;
+			} 
+			for(Resource res : resources) {
+				try {
+					ClassMetadata meta = metadataReaderFactory.getMetadataReader(res).getClassMetadata();
+					Class<?> clazz = Class.forName(meta.getClassName());
+					if(clazz != null) {
+						classes.add(clazz);
+					}
+				} catch (IOException | ClassNotFoundException e) {
+				}
+			}
+		}
+		return classes;
 	}
 }

@@ -17,7 +17,6 @@
 package com.cpjit.swagger4j.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -33,7 +32,10 @@ import org.slf4j.LoggerFactory;
  * <p><b>Note:</b>该类用于从classpath下查找资源。</p>
  * @author yonghuan
  * @since 1.2.2
+ * @deprecated 在多模块项目中，该类不能查找到其他模块中的资源，
+ * 				推荐使用  {@link org.springframework.core.io.support.ResourcePatternResolver} 替代。
  */
+@Deprecated
 public final class ResourceUtil {
 	private final static Logger LOG = LoggerFactory.getLogger(ResourceUtil.class);
 	private final static Class<?> DEFAULT_LOADER = ResourceUtil.class;
