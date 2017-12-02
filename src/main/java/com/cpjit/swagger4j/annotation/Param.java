@@ -42,8 +42,8 @@ public @interface Param {
 	 * 
 	 *  <p><b>Note：</b>
 	 *  <ul>
-	 *   <li>当前请求方式为POST的时候，默认值为formData</li>
-	 *   <li>请求方式为非POST的时候，默认值为query</li>
+	 *   <li>当前请求方式为POST或PUT的时候，默认值为formData</li>
+	 *   <li>其他请求方式为的默认值为query</li>
 	 *  </ul>
 	 */
 	String in() default "";

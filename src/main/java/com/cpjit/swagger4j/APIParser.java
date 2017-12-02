@@ -455,7 +455,7 @@ public final class APIParser implements APIParseable {
 				} else { // 不包含文件上传
 					String in = paramAttr.in();
 					if(StringUtils.isBlank(in)) {
-						if("post".equalsIgnoreCase(service.method())) {
+						if("post".equalsIgnoreCase(service.method()) || "put".equalsIgnoreCase(service.method())) {
 							in = "formData";
 						} else {
 							in = "query";

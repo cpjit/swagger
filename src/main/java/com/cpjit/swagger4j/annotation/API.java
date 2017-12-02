@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
 public @interface API {
 
 	/** 接口地址 */
-	String value();
+	String value() default "";
 
 	/** 分类 */
 	String[] tags() default {};
