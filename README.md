@@ -66,20 +66,21 @@ devMode=true
 `swagger4j`的配置信息都必须写在`swagger.properties`文件里面。具体的配置项及其说明如下：
 <table>
 	<thead>
-		<tr><th>键</th><th>说明</th></tr>
+		<tr><th>键</th><th>说明</th><th>c</th></tr>
 	</thead>
 	<tbody>
-		<tr><th>apiFile</th><th>扫描生成json文件的存放路径</th></tr>
-		<tr><th>packageToScan</th><th>扫描的包</th></tr>
-		<tr><th>apiDescription</th><th>接口文档描述</th></tr>
-		<tr><th>apiTitle</th><th>接口文档标题</th></tr>
-		<tr><th>apiVersion</th><th>接口版本</th></tr>
-		<tr><th>teamOfService</th><th>服务团队</th></tr>
-		<tr><th>apiHost</th><th>接口主机地址</th></tr>
-		<tr><th>apiBasePath</th><th>接口基路径</th></tr>
-		<tr><th>devMode</th><th>是否启用开发模式，如果开启则每次获取接口文档的时候都会扫描类</th></tr>
-		<tr><th>suffix</th><th>接口请求地址后缀，如.action</th></tr>
-		<tr><th>disabled</th><th>是否关闭swagger4j，一般用于生产环境</th></tr>
+		<tr><th>apiFile</th><th>扫描生成json文件的存放路径</th><th></th></tr>
+		<tr><th>packageToScan</th><th>扫描的包</th><th></th></tr>
+		<tr><th>apiDescription</th><th>接口文档描述</th><th></th></tr>
+		<tr><th>apiTitle</th><th>接口文档标题</th><th></th></tr>
+		<tr><th>apiVersion</th><th>接口版本</th><th></th></tr>
+		<tr><th>teamOfService</th><th>服务团队</th><th></th></tr>
+		<tr><th>apiHost</th><th>接口主机地址</th><th></th></tr>
+		<tr><th>apiBasePath</th><th>接口基路径</th><th></th></tr>
+		<tr><th>devMode</th><th>是否启用开发模式，如果开启则每次获取接口文档的时候都会扫描类</th><th></th></tr>
+		<tr><th>suffix</th><th>接口请求地址后缀，如.action</th><th></th></tr>
+		<tr><th>disabled</th><th>是否关闭swagger4j，一般用于生产环境</th><th></th></tr>
+		<tr><th>schemes</th><th>支持的请求协议，如http、https</th><th></th>v2.1.4</tr>
 	</tbody>
 </table>
 

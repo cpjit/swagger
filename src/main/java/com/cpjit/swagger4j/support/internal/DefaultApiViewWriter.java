@@ -79,7 +79,7 @@ public class DefaultApiViewWriter implements ApiViewWriter {
         if (StringUtils.isBlank(suffix)) {
             suffix = "";
         }
-        root.put("getApisUrl", "http://" + host + "/api" + suffix);
+        root.put("getApisUrl", request.getScheme()+"://" + host + "/api" + suffix);
         root.put("apiDescription", props.getProperty("apiDescription"));
         root.put("apiTitle", props.getProperty("apiTitle"));
         root.put("apiVersion", props.getProperty("apiVersion"));

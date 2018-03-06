@@ -36,7 +36,7 @@ class APIDoc {
 		return swagger;
 	}
 
-	private String[] schemes = new String[] { "http" };
+	private String[] schemes = new String[] { "http", "https" };
 
 	/**
 	 * @return schemes
