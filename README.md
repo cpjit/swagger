@@ -1,5 +1,4 @@
 # swagger4j
-从版本2.0.0开始，`cpj-swagger`更名为`swagger4j`，顶级包名也更名为com.cpjit.swagger4j，与版本1.x.x 完全不兼容。<br />
 `swagger4j`通过与[`swagger ui`](http://swagger.io/)一起快速为您的web项目产生接口文档，并且支持在线测试接口。`swagger4j`可以很方便的与`struts2`、`spring mvc`、`servlet`集成使用，下面的教程将详细说明如何使用swagger4j。
 
 ## 目录
@@ -14,9 +13,9 @@
 * maven：
 ```xml
 <dependency>
-	<groupId>com.cpjit</groupId>
-	<artifactId>swagger4j</artifactId>
-	<version>2.1.3</version>
+    <groupId>com.cpjit</groupId>
+	<artifactId>swagger4j-jdk16</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
