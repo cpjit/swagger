@@ -34,7 +34,7 @@ public class DefaultConfigResolver implements ConfigResolver {
 
     public final static String DEFAULT_CONFIG_FILE = "swagger.properties";
     private String configFile = DEFAULT_CONFIG_FILE;
-    private AtomicReference<Properties> config = new AtomicReference<>();
+    private AtomicReference<Properties> config = new AtomicReference<Properties>();
 
     public DefaultConfigResolver() {
     }
@@ -66,7 +66,7 @@ public class DefaultConfigResolver implements ConfigResolver {
         if (StringUtils.isBlank(apiFile)) {
             apiFile = Constants.DEFAULT_API_FILE;
         }
-        String apiFilePath = request.getServletContext().getRealPath(apiFile);
+        String apiFilePath = request.getRealPath(apiFile);
         props.setProperty("apiFile", apiFilePath);
         String suffix = props.getProperty("suffix");
         if(StringUtils.isBlank(suffix)) {

@@ -38,7 +38,7 @@ public final class FreemarkerUtils {
 	
 	private final static Configuration sCfg; 
 	static {
-		sCfg = new Configuration(Configuration.VERSION_2_3_23);
+		sCfg = new Configuration(Configuration.VERSION_2_3_22);
         sCfg.setClassLoaderForTemplateLoading(FreemarkerUtils.class.getClassLoader(), "com/cpjit/swagger4j/support/internal/templates/ftlh");
         sCfg.setDefaultEncoding("UTF-8");
         sCfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);

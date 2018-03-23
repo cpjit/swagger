@@ -25,7 +25,8 @@ import javax.servlet.http.HttpServletRequest;
  * @since 1.2.0
  */
 public class Struts2ApiViewWriter extends DefaultApiViewWriter implements ApiViewWriter {
-	
+
+	@Override
 	protected String getTemplateName() {
 		return "api-struts2.ftlh";
 	}

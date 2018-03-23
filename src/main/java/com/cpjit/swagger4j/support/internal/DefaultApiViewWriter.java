@@ -16,35 +16,28 @@
  */
 package com.cpjit.swagger4j.support.internal;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.alibaba.fastjson.JSONWriter;
+import com.cpjit.swagger4j.APIParseable;
+import com.cpjit.swagger4j.APIParser;
 import com.cpjit.swagger4j.ConfigResolver;
 import com.cpjit.swagger4j.DefaultConfigResolver;
 import com.cpjit.swagger4j.support.Constants;
+import com.cpjit.swagger4j.support.internal.templates.FreemarkerUtils;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.fastjson.JSONWriter;
-import com.cpjit.swagger4j.APIParseable;
-import com.cpjit.swagger4j.APIParser;
-import com.cpjit.swagger4j.support.internal.templates.FreemarkerUtils;
-
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author yonghuan
@@ -69,7 +62,7 @@ public class DefaultApiViewWriter implements ApiViewWriter {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        Map<String, Object> root = new HashMap<>();
+        Map<String, Object> root = new HashMap<String, Object>();
         root.put("lang", lang);
         String path = request.getContextPath();
         String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path + "/";
@@ -124,7 +117,8 @@ public class DefaultApiViewWriter implements ApiViewWriter {
                 restParser.parse();
                 scanfed.set(true);
             }
-            byte[] bs = Files.readAllBytes(Paths.get(props.getProperty("apiFile")));
+
+            byte[] bs = FileUtils.readFileToByteArray(new File(props.getProperty("apiFile")));
             OutputStream out = response.getOutputStream();
             out.write(bs);
             out.flush();
@@ -163,7 +157,7 @@ public class DefaultApiViewWriter implements ApiViewWriter {
     public void writeStatic(HttpServletRequest request, HttpServletResponse response, Properties props) throws IOException {
         String path = buildResourcePath(request, props);
         if (LOG.isDebugEnabled()) {
-            LOG.debug(String.join("", "获取web资源文件： ", path));
+            LOG.debug(StringUtils.join("获取web资源文件： ", path));
         }
         String contentType = FileTypeMap.getContentType(path);
         response.setContentType(contentType);

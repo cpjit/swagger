@@ -101,7 +101,7 @@ public class ApiAction extends ActionSupport implements Constants {
 		if(StringUtils.isBlank(apiFile)) {
 			apiFile = DEFAULT_API_FILE;
 		}
-		String apiFilePath = request.getServletContext().getRealPath(apiFile);
+		String apiFilePath = request.getRealPath(apiFile);
 		props.setProperty("apiFile", apiFilePath);
 		if(StringUtils.isBlank(props.getProperty("devMode"))) {
 			props.setProperty("devMode", devMode);
