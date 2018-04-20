@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.cpjit.swagger4j.annotation.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,17 +46,6 @@ import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 
 import com.alibaba.fastjson.JSONWriter;
-import com.cpjit.swagger4j.annotation.API;
-import com.cpjit.swagger4j.annotation.APISchema;
-import com.cpjit.swagger4j.annotation.APISchemaPropertie;
-import com.cpjit.swagger4j.annotation.APISchemas;
-import com.cpjit.swagger4j.annotation.APITag;
-import com.cpjit.swagger4j.annotation.APITags;
-import com.cpjit.swagger4j.annotation.APIs;
-import com.cpjit.swagger4j.annotation.DataType;
-import com.cpjit.swagger4j.annotation.Item;
-import com.cpjit.swagger4j.annotation.Items;
-import com.cpjit.swagger4j.annotation.Param;
 
 /**
  * 接口解析器。
@@ -330,12 +320,12 @@ public final class APIParser implements APIParseable {
         Collection<Tag> tags = parseTag();
         api.setTags(tags);
 
-        /* 解析全部path */
-        Map<String, Map<String, Path>> paths = parsePath();
-        api.setPaths(paths);
-
         /* 解析全部definition */
         Map<String, Object> definitions = parseDefinition();
+
+        /* 解析全部path */
+        Map<String, Map<String, Path>> paths = parsePath(definitions);
+        api.setPaths(paths);
         api.setDefinitions(definitions);
         return api;
     }
@@ -352,30 +342,101 @@ public final class APIParser implements APIParseable {
     /**
      * url -> [ path ]
      */
-    private Map<String, Map<String, Path>> parsePath() throws Exception {
+    private Map<String, Map<String, Path>> parsePath(Map<String, Object> definitions) throws Exception {
         Map<String, Map<String, Path>> paths = new HashMap<>();
-//		List<Class<?>> clazzs = ReflectUtils.scanClazzs(packageToScan, true); // 扫描包以获取包中的类
-//		for(Class<?> clazz : clazzs) {
-//			APIs apis = clazz.getAnnotation(APIs.class);
-//			if(apis == null || apis.hide()) {
-//				continue;
-//			}
-//			scanAPIMethod(clazz).stream()
-//								.forEachOrdered(method -> api2Path(method, apis, paths));
-//		}
         scanClass().forEach(clazz -> {
             APIs apis = clazz.getAnnotation(APIs.class);
             if (apis == null || apis.hide()) {
                 return;
             }
             scanAPIMethod(clazz)
-                    .forEach(method -> api2Path(method, apis, paths));
+                    .forEach(method -> api2Path(method, apis, paths, definitions));
         });
         return paths;
     }
 
-    private void api2Path(Method method, APIs apis, Map<String, Map<String, Path>> paths) {
-        API service = method.getAnnotation(API.class);
+    private Api parseApi(Method method) {
+        Api api = new Api();
+        API apiAnnotation = method.getAnnotation(API.class);
+        if (apiAnnotation != null) {
+            api.parameters = apiAnnotation.parameters();
+            api.tags = apiAnnotation.tags();
+            api.consumes = apiAnnotation.consumes();
+            api.deprecated = apiAnnotation.deprecated();
+            api.hide = apiAnnotation.hide();
+            api.description = apiAnnotation.description();
+            api.method = apiAnnotation.method();
+            api.operationId = apiAnnotation.operationId();
+            api.produces = apiAnnotation.produces();
+            api.summary = apiAnnotation.summary();
+            api.value = apiAnnotation.value();
+            return api;
+        }
+        Get get = method.getAnnotation(Get.class);
+        if (get != null) {
+            api.parameters = get.parameters();
+            api.tags = get.tags();
+            api.consumes = get.consumes();
+            api.deprecated = get.deprecated();
+            api.hide = get.hide();
+            api.description = get.description();
+            api.method = "GET";
+            api.operationId = get.operationId();
+            api.produces = get.produces();
+            api.summary = get.summary();
+            api.value = get.value();
+            return api;
+        }
+        Post post = method.getAnnotation(Post.class);
+        if (post != null) {
+            api.parameters = post.parameters();
+            api.tags = post.tags();
+            api.consumes = post.consumes();
+            api.deprecated = post.deprecated();
+            api.hide = post.hide();
+            api.description = post.description();
+            api.method = "POST";
+            api.operationId = post.operationId();
+            api.produces = post.produces();
+            api.summary = post.summary();
+            api.value = post.value();
+            return api;
+        }
+        Put put = method.getAnnotation(Put.class);
+        if (put != null) {
+            api.parameters = put.parameters();
+            api.tags = put.tags();
+            api.consumes = put.consumes();
+            api.deprecated = put.deprecated();
+            api.hide = put.hide();
+            api.description = put.description();
+            api.method = "PUT";
+            api.operationId = put.operationId();
+            api.produces = put.produces();
+            api.summary = put.summary();
+            api.value = put.value();
+            return api;
+        }
+        Delete delete = method.getAnnotation(Delete.class);
+        if (delete != null) {
+            api.parameters = delete.parameters();
+            api.tags = delete.tags();
+            api.consumes = delete.consumes();
+            api.deprecated = delete.deprecated();
+            api.hide = delete.hide();
+            api.description = delete.description();
+            api.method = "DELETE";
+            api.operationId = delete.operationId();
+            api.produces = delete.produces();
+            api.summary = delete.summary();
+            api.value = delete.value();
+            return api;
+        }
+        return null;
+    }
+
+    private void api2Path(Method method, APIs apis, Map<String, Map<String, Path>> paths, Map<String, Object> definitions) {
+        Api service = parseApi(method);
         if (service.hide()) {
             return;
         }
@@ -424,11 +485,30 @@ public final class APIParser implements APIParseable {
         }
         p.setProduces(Arrays.asList(service.produces()));
         p.setDeprecated(service.deprecated());
-        p.setParameters(parseParameters(service, isMultipart));
+        p.setParameters(parseParameters(url, service, isMultipart, definitions));
     }
 
-    private List<Map<String, Object>> parseParameters(API service, boolean isMultipart) {
+    private List<Map<String, Object>> parseParameters(String url, Api service, boolean isMultipart, Map<String, Object> definitions) {
         List<Map<String, Object>> parameters = new ArrayList<>(); // 请求参数
+        Map<String, Object> body = new HashMap<>();
+        Map<String, Object> properties = new HashMap<>();
+        List<String> required = new ArrayList<>(service.parameters().length);
+        boolean useBody = Arrays.stream(service.parameters())
+                .filter(param -> "body".equalsIgnoreCase(param.in()))
+                .count() > 0;
+        if (useBody) {
+            Map<String, Object> definition = new HashMap<>();
+            definition.put("type", "object");
+            definition.put("properties", properties);
+            definition.put("required", required);
+            String definitionName = url.replaceAll("/", "_");
+            definitions.put(definitionName, definition);
+            body.put("in", "body");
+            body.put("name", "body");
+            Map<String, Object> ref = new HashMap<>();
+            ref.put("$ref", "#/definitions/" + definitionName);
+            body.put("schema", ref);
+        }
         /* 解析参数，优先使用schema */
         for (Param paramAttr : service.parameters()) {
             Map<String, Object> parameter = new HashMap<>();
@@ -441,6 +521,24 @@ public final class APIParser implements APIParseable {
                 Map<String, Object> ref = new HashMap<>();
                 ref.put("$ref", "#/definitions/" + paramAttr.schema());
                 parameter.put("schema", ref);
+            } else if ("body".equalsIgnoreCase(paramAttr.in())) {
+                Map<String, Object> propertie = new HashMap<>();
+                if (paramAttr.dataType() != null) {
+                    propertie.put("type", paramAttr.dataType().type());
+                    propertie.put("format", paramAttr.dataType().format());
+                } else {
+                    propertie.put("type", paramAttr.type());
+                    propertie.put("format", paramAttr.format());
+                }
+                propertie.put("description", paramAttr.description());
+                if (paramAttr.required()) { // 为必须参数
+                    required.add(paramAttr.name());
+                }
+                if (StringUtils.isNotBlank(paramAttr.items())) { // 可选值
+                    propertie.put("enum", parseOptionalValue(paramAttr.type(), paramAttr.items().split(",")));
+                }
+                properties.put(paramAttr.name(), propertie);
+                continue;
             } else { // 简单类型的参数
                 String requestParamType, requestParamFormat;
                 if (paramAttr.dataType() != DataType.UNKNOWN) { // since 1.2.2
@@ -490,6 +588,9 @@ public final class APIParser implements APIParseable {
             }
             parameters.add(parameter);
         }
+        if (properties.size() > 0) {
+            parameters.add(body);
+        }
         return parameters;
     }
 
@@ -514,7 +615,7 @@ public final class APIParser implements APIParseable {
     /**
      * 判断接口的请求Content-Type是否为multipart/form-data。
      */
-    private boolean hasMultipart(API service) {
+    private boolean hasMultipart(Api service) {
         return Arrays.stream(service.consumes())
                 .anyMatch(consume -> "multipart/form-data".equals(consume));
     }
@@ -598,8 +699,16 @@ public final class APIParser implements APIParseable {
             return Collections.emptyList();
         }
         return Arrays.stream(clazz.getDeclaredMethods())
-                .filter(method -> method.getAnnotation(API.class) != null)
+                .filter(this::apiAnnotationedMethod)
                 .collect(Collectors.toList());
+    }
+
+    private boolean apiAnnotationedMethod(Method method) {
+        return method.getAnnotation(API.class) != null
+                || method.getAnnotation(Get.class) != null
+                || method.getAnnotation(Post.class) != null
+                || method.getAnnotation(Put.class) != null
+                || method.getAnnotation(Delete.class) != null;
     }
 
 
@@ -625,5 +734,63 @@ public final class APIParser implements APIParseable {
             }
         }
         return classes;
+    }
+
+    private static class Api {
+        private String value = "";
+        private String[] tags = {};
+        private String method = "";
+        private String summary = "";
+        private String description = "";
+        private String operationId = "";
+        private String[] consumes = {};
+        private String[] produces = {};
+        private Param[] parameters = {};
+        private boolean deprecated;
+        private boolean hide;
+
+        String value() {
+            return value;
+        }
+
+        String[] tags() {
+            return tags;
+        }
+
+        String method() {
+            return method;
+        }
+
+        String summary() {
+            return summary;
+        }
+
+        String description() {
+            return description;
+        }
+
+        String operationId() {
+            return operationId;
+        }
+
+        String[] consumes() {
+            return consumes;
+        }
+
+        String[] produces() {
+            return produces;
+        }
+
+        Param[] parameters() {
+            return parameters;
+        }
+
+        boolean deprecated() {
+            return deprecated;
+        }
+
+        boolean hide() {
+            return hide;
+        }
     }
 }
