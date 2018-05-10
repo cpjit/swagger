@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 CPJIT Group.
+ * Copyright 2011-2018 CPJIT Group.
  *
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,28 +49,6 @@ import com.alibaba.fastjson.JSONWriter;
 
 /**
  * 接口解析器。
- * <p>
- * <p>可以通过如下的方式来构建一个接口解析器：</p>
- * <p>
- * <pre>
- * 	// 创建一个构建器
- * 	String host = "127.0.0.1/app";
- * 	String file = "c:/apis.json";
- * 	String[] packageToScan = new String[]{"com.cpj.demo.api"};
- * 	APIParser.Builder builder = new APIParser.Builder(host, file, packageToScan);
- *
- * 	// 设置可选参数
- * 	builder.basePath("/");
- *
- * 	// 构建解析器
- * 	APIParser parser = builder.build();
- * 	// 解析
- * 	parser.parse();
- * </pre>
- * <p>或者通过这种方式来构建一个接口解析器：</p>
- * <pre>
- * 	APIParser.newInstance(props);
- * </pre>
  *
  * @author yonghaun
  * @since 1.0.0
@@ -94,33 +72,27 @@ public final class APIParser implements APIParseable {
      * 创建一个解析器。
      *
      * @param props properties。
-     * @see APIParser.Builder
      */
     public final static APIParser newInstance(Properties props) throws IOException {
-        String[] packageToScan = props.getProperty("packageToScan").split(DELIMITER);
-        String schemesStr = props.getProperty("schemes");
+        return new APIParser(props.getProperty("schemes"), props.getProperty("apiHost"), props.getProperty("apiFile"), props.getProperty("packageToScan"), props.getProperty("apiBasePath"),
+                props.getProperty("apiDescription"), props.getProperty("termsOfService"), props.getProperty("apiTitle"), props.getProperty("apiVersion"), props.getProperty("suffix"));
+    }
+
+    private APIParser(String schemesStr, String host, String file, String packageToScan,
+                      String basePath, String description, String termsOfService, String title, String version, String suffix) {
         String[] schemes;
         if (StringUtils.isNotBlank(schemesStr)) {
             schemes = schemesStr.split(",");
         } else {
             schemes = new String[]{"http"};
         }
-        Builder builder = new Builder(schemes, props.getProperty("apiHost"), props.getProperty("apiFile"), packageToScan)
-                .basePath(props.getProperty("apiBasePath"))
-                .description(props.getProperty("apiDescription"))
-                .termsOfService(props.getProperty("termsOfService"))
-                .title(props.getProperty("apiTitle"))
-                .version(props.getProperty("apiVersion"))
-                .suffix(props.getProperty("suffix"));
-        return new APIParser(builder);
-    }
 
-    private APIParser(Builder builder) {
+
         // 扫描class并生成文件所需要的参数
-        this.schemes = builder.schemes;
-        this.host = builder.host;
-        this.file = builder.file;
-        this.packageToScan = builder.packageToScan;
+        this.schemes = schemes;
+        this.host = host;
+        this.file = file;
+        this.packageToScan = Arrays.asList(packageToScan.split(DELIMITER));
         try {
             packages = scanClass().stream()
                     .map(Class::getPackage)
@@ -128,152 +100,18 @@ public final class APIParser implements APIParseable {
         } catch (Exception e) {
             throw new IllegalStateException("扫描包信息失败", e);
         }
-        this.basePath = builder.basePath;
-        this.suffix = builder.suffix;
-
+        this.basePath = basePath;
+        this.suffix = suffix;
         // API文档信息
-        info = new APIDocInfo.Builder()
-                .contact(builder.contact)
-                .description(builder.description)
-                .license(builder.license)
-                .termsOfService(builder.termsOfService)
-                .title(builder.title)
-                .version(builder.version).build();
+        info = new APIDocInfo();
+        // info.setContact(contact);
+        info.setDescription(description);
+        // info.setLicense(license);
+        info.setTermsOfService(termsOfService);
+        info.setTitle(title);
+        info.setVersion(version);
     }
 
-    /**
-     * @author yonghuan
-     */
-    public static class Builder {
-        // required args
-        private String host;
-        private String file;
-        private List<String> packageToScan;
-
-        private String[] schemes;
-        private String basePath;
-        private String suffix = "";
-        private String description;
-        private String version;
-        private String title;
-        private String termsOfService;
-        private String contact;
-        private License license;
-
-        /**
-         * 创建一个构建器。
-         *
-         * @param host          API访问地址（不包含协议）
-         * @param file          解析产生的文件的存放路径
-         * @param packageToScan 待扫描的包
-         */
-        public Builder(String[] schemes, String host, String file, String[] packageToScan) {
-            this(schemes, host, file, Arrays.asList(packageToScan));
-        }
-
-        /**
-         * 创建一个构建器。
-         *
-         * @param host          API访问地址（不包含协议）
-         * @param file          解析产生的文件的存放路径
-         * @param packageToScan 待扫描的包
-         */
-        public Builder(String[] schemes, String host, String file, List<String> packageToScan) {
-            this.schemes = schemes;
-            this.host = host;
-            this.file = file;
-            this.packageToScan = packageToScan;
-        }
-
-        /**
-         * 构建解析器。
-         */
-        public APIParser build() {
-            return new APIParser(this);
-        }
-
-        /**
-         * 设置API相对于host（API访问地址）的基路径
-         *
-         * @param val API相对于host（API访问地址）的基路径
-         */
-        public Builder basePath(String val) {
-            this.basePath = val;
-            return this;
-        }
-
-        /**
-         * 设置请求地址的后缀，如：.do、.action。
-         *
-         * @param suffix 请求地址的后缀
-         */
-        public Builder suffix(String suffix) {
-            if (StringUtils.isNotBlank(suffix)) {
-                this.suffix = suffix;
-            }
-            return this;
-        }
-
-        /**
-         * 设置API描述
-         *
-         * @param val API描述
-         */
-        public Builder description(String val) {
-            this.description = val;
-            return this;
-        }
-
-        /**
-         * 设置API版本
-         *
-         * @param val API版本
-         */
-        public Builder version(String val) {
-            this.version = val;
-            return this;
-        }
-
-        /**
-         * 设置API标题
-         *
-         * @param val API标题
-         */
-        public Builder title(String val) {
-            this.title = val;
-            return this;
-        }
-
-        /**
-         * 设置API开发团队的服务地址
-         *
-         * @param val API开发团队的服务地址
-         */
-        public Builder termsOfService(String val) {
-            this.termsOfService = val;
-            return this;
-        }
-
-        /**
-         * 设置API开发团队的联系人
-         *
-         * @param val API开发团队的联系人
-         */
-        public Builder contact(String val) {
-            this.contact = val;
-            return this;
-        }
-
-        /**
-         * 设置API遵循的协议（如apahce开源协议）
-         *
-         * @param val API遵循的协议（如apahce开源协议）
-         */
-        public Builder license(License val) {
-            this.license = val;
-            return this;
-        }
-    }
 
     /**
      * @return 解析完成后存放JSON数据的文件路径。
@@ -535,7 +373,8 @@ public final class APIParser implements APIParseable {
                     required.add(paramAttr.name());
                 }
                 if (StringUtils.isNotBlank(paramAttr.items())) { // 可选值
-                    propertie.put("enum", parseOptionalValue(paramAttr.type(), paramAttr.items().split(",")));
+                    String type = paramAttr.dataType() != null ? paramAttr.dataType().type() : paramAttr.type();
+                    propertie.put("enum", parseOptionalValue(type, paramAttr.items().split(",")));
                 }
                 properties.put(paramAttr.name(), propertie);
                 continue;
@@ -640,7 +479,11 @@ public final class APIParser implements APIParseable {
                 .flatMap(apiTags -> Arrays.stream(apiTags.tags()));
         return Stream.of(tagsFromClass, tagsFromPackage)
                 .flatMap(stream -> stream)
-                .map(apiTag -> new Tag(apiTag.value(), apiTag.description()))
+                .map(apiTag -> {
+                    Tag tag = new Tag(apiTag.value());
+                    tag.setDescription(apiTag.description());
+                    return tag;
+                })
                 .collect(Collectors.toSet());
     }
 

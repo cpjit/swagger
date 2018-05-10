@@ -15,8 +15,8 @@
  * limitations under the License. 
  */
 /**
- * 工具类。
- * @author yonghuan
- * @since 1.2.2
+ * @author yonghaun
  */
-package com.cpjit.swagger4j.support;
+package com.cpjit.swagger4j
+
+
