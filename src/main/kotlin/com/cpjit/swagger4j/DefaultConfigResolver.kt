@@ -16,16 +16,14 @@
  */
 package com.cpjit.swagger4j
 
-import com.cpjit.swagger4j.support.Constants
-import com.cpjit.swagger4j.util.ResourceUtil
 import org.apache.commons.lang3.StringUtils
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.io.ResourceLoader
 import org.springframework.stereotype.Component
-
-import javax.servlet.http.HttpServletRequest
 import java.io.IOException
-import java.io.InputStream
-import java.util.Properties
+import java.util.*
 import java.util.concurrent.atomic.AtomicReference
+import javax.servlet.http.HttpServletRequest
 
 /**
  * @author yonghuan
@@ -33,8 +31,15 @@ import java.util.concurrent.atomic.AtomicReference
  */
 @Component
 class DefaultConfigResolver : ConfigResolver {
-    private var configFile = DEFAULT_CONFIG_FILE
+
+    /**
+     *  生成文件的默认保存地址。
+     */
+    val defaultApiFile = "/WEB-INF/apis.json"
+    private var configFile = "classpath:/swagger.properties"
     private val config = AtomicReference<Properties>()
+    @Autowired
+    lateinit var resourceLoader: ResourceLoader
 
     constructor() {}
 
@@ -57,16 +62,16 @@ class DefaultConfigResolver : ConfigResolver {
     @Throws(IOException::class)
     private fun loadConfig(request: HttpServletRequest): Properties {
         val props = Properties()
-        val `is` = ResourceUtil.getResourceAsStream(configFile)
+        val `is` = resourceLoader.getResource(configFile).inputStream
         props.load(`is`)
         val path = request.contextPath
         val host = request.serverName + ":" + request.serverPort + path
         props.setProperty("apiHost", host)
         var apiFile = props.getProperty("apiFile")
         if (StringUtils.isBlank(apiFile)) {
-            apiFile = Constants.DEFAULT_API_FILE
+            apiFile = defaultApiFile
         }
-        val apiFilePath = request.servletContext.getRealPath(apiFile)
+        val apiFilePath = request.getRealPath(apiFile)
         props.setProperty("apiFile", apiFilePath)
         var suffix = props.getProperty("suffix")
         if (StringUtils.isBlank(suffix)) {
@@ -74,11 +79,6 @@ class DefaultConfigResolver : ConfigResolver {
         }
         props["suffix"] = suffix
         return props
-    }
-
-    companion object {
-
-        val DEFAULT_CONFIG_FILE = "swagger.properties"
     }
 
 }

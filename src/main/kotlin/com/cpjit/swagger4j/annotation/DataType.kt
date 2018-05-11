@@ -21,9 +21,9 @@ package com.cpjit.swagger4j.annotation
  * @author yonghuan
  * @since 1.2.2
  */
-enum class DataType private constructor(private val type: String?, private val format: String?) {
+enum class DataType private constructor(val type: String, val format: String) {
     /** 未知数据类型  */
-    UNKNOWN(null, null),
+    UNKNOWN("", ""),
     /** 32位的有符号整数  */
     INTEGER("integer", "int32"),
     /** 64位的有符号整数  */
@@ -33,13 +33,13 @@ enum class DataType private constructor(private val type: String?, private val f
     /** 双精度浮点数  */
     DOUBLE("number", "double"),
     /** 字符串  */
-    STRING("string", null),
+    STRING("string", ""),
     /** base64编码的字符  */
     BYTE("string", "byte"),
     /** 任何的八位字节序列  */
     BINARY("string", "binary"),
     /** boolean类型  */
-    BOOLEAN("boolean", null),
+    BOOLEAN("boolean", ""),
     /** 日期  */
     DATE("string", "date"),
     /** 日期和时间  */
@@ -47,15 +47,7 @@ enum class DataType private constructor(private val type: String?, private val f
     /** 密码字符串  */
     PASSWORD("string", "password"),
     /** 请求参数只能是指定值中的某一项  */
-    ARRAY("array", null),
+    ARRAY("array", ""),
     /** 文件  */
     FILE("file", "");
-
-    fun type(): String? {
-        return type
-    }
-
-    fun format(): String? {
-        return format
-    }
 }
