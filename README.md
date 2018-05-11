@@ -3,24 +3,28 @@
 `swagger4j`通过与[`swagger ui`](http://swagger.io/)一起快速为您的web项目产生接口文档，并且支持在线测试接口。`swagger4j`可以很方便的与`struts2`、`spring mvc`、`servlet`集成使用，下面的教程将详细说明如何使用swagger4j。
 
 ## 目录
-[`一. 加入依赖JAR文件`](#一-加入依赖JAR文件)<br />
-[`二. 配置`](#二-配置)<br />
-[`三. 标注你的接口`](#三-标注你的接口)<br />
-[`四. 访问接口文档`](#四-访问接口文档)<br />
-[`五. 核心API`](#五-核心api)<br />
-[`六. 示例程序`](#六-示例程序)<br />
+[`一. 运行要求`](#一-运行要求)<br />
+[`二. 加入依赖JAR文件`](#二-加入依赖JAR文件)<br />
+[`三. 配置`](#三-配置)<br />
+[`四. 标注你的接口`](#四-标注你的接口)<br />
+[`五. 访问接口文档`](#五-访问接口文档)<br />
+[`六. 核心API`](#六-核心api)<br />
+[`七. 示例程序`](#七-示例程序)<br />
 
-## 一. 加入依赖JAR文件
+## 一. 运行要求
+JDK1.6+
+
+## 二. 加入依赖JAR文件
 * maven：
 ```xml
 <dependency>
 	<groupId>com.cpjit</groupId>
 	<artifactId>swagger4j</artifactId>
-	<version>2.1.3</version>
+	<version>2.1.5</version>
 </dependency>
 ```
 
-## 二. 配置
+## 三. 配置
 ### 1. 选择使用方式
 您可以通过三种方式来使用`swagger4j`。
 * 与strut2集成</br>
@@ -37,21 +41,7 @@
 * 与spring mvc集成 </br>
 如果您的web项目是基于`spring mvc`的，您可以在您的spring mvc配置文件中加入如下代码来快速集成`swagger4j`：
 ```xml
- <context:component-scan base-package="com.cpjit.swagger4j.support.springmvc">
-    	<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
- </context:component-scan>
-```
-* 与servlet集成</br>
-如果您的web项目是基于`servlet`的，您可以在您的web.xml配置文件中加入如下代码来快速集成`swagger4j`：
-```xml
-<servlet>
-    <servlet-name>apiServlet</servlet-name>
-    <servlet-class>com.cpjit.swagger4j.support.servlet.ApiServlet</servlet-class>
-</servlet>
-<servlet-mapping>
-    <servlet-name>apiServlet</servlet-name>
-    <url-pattern>/api/*</url-pattern>
-</servlet-mapping>
+ <context:component-scan base-package="com.cpjit.swagger4j" />
 ```
 ### 2. 修改配置项
 您需要在项目的源文件目录下添加一个`swagger.properties`文件，并加入以下配置项：
@@ -84,7 +74,7 @@ devMode=true
 	</tbody>
 </table>
 
-## 三. 标注你的接口
+## 四. 标注你的接口
 接下来需要用swagger4j提供的注解来标明你的接口，下面以spring mvc为例来说明如何标注接口，其他方式请参考[`示例程序`](#六-示例程序下载)。
 ```java
 @Controller
@@ -110,11 +100,11 @@ public class DemoController {
 	}
 }
 ```
-## 四. 访问接口文档
+## 五. 访问接口文档
 在完成前面的工作之后，您可以部署好您的web项目，然后在浏览器输入以下地址就可以访问接口文档了：
 http://127.0.0.1:8080/您的项目名/api/index
 
-## 五. 核心API
+## 六. 核心API
 ### 1. 注解 @com.cpjit.swagger4j.annotation.APIs
 该注解放在一个类上面，用来表明类中包含作为HTTP接口的方法（被注解[`@com.cpjit.swagger4j.annotation.API`](#2-注解-comcpjitswagger4jannotationapi)标注了的方法）。
 该注解的`value`用来设置接口的前缀，这和`struts2`的命名空间很像。使用示例如下：
@@ -281,5 +271,5 @@ public void login(HttpServletResponse response, String username, String password
 ### 4.枚举 com.cpjit.swagger4j.annotation.DataType
 可用的数据类型
 
-## 六. 示例程序
+## 七. 示例程序
 * [`Spring MVC`](https://github.com/cpjit/swagger-demo-springmvc)
