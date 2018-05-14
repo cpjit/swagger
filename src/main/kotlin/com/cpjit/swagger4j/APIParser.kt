@@ -25,7 +25,6 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.core.io.support.ResourcePatternResolver
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory
 import java.io.*
-import java.lang.Double
 import java.lang.reflect.Method
 import java.util.Arrays
 import java.util.Properties
@@ -46,29 +45,25 @@ class APIParser private constructor(schemesStr: String, private val host: String
                                     private val basePath: String, description: String, termsOfService: String, title: String, version: String, suffix: String) : APIParseable {
     private val resourcePatternResolver = PathMatchingResourcePatternResolver()
     private val metadataReaderFactory = CachingMetadataReaderFactory(this.resourcePatternResolver)
-    var schemes: Array<String>
+    private var schemes: Array<String>
     var suffix = ""
     var info: APIDocInfo
     /**
      * @return 待解析接口所在包
      */
-    val packageToScan: List<String>
+    private val packageToScan: List<String>
     private var items: MutableMap<String, Item>? = null
 
     private var packages: Collection<Package>
 
     init {
-        val schemes: Array<String>
-        if (StringUtils.isNotBlank(schemesStr)) {
-            schemes = schemesStr.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-        } else {
-            schemes = arrayOf("http")
+        val schemes = when (StringUtils.isNotBlank(schemesStr)) {
+            true -> schemesStr.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            false -> arrayOf("http")
         }
-
-
         // 扫描class并生成文件所需要的参数
         this.schemes = schemes
-        this.packageToScan = Arrays.asList(*packageToScan.split(DELIMITER.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
+        this.packageToScan = Arrays.asList(*packageToScan.split("[;,]".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
         try {
             packages = scanClass()
                     .map { it.`package` }
@@ -130,8 +125,7 @@ class APIParser private constructor(schemesStr: String, private val host: String
     @Throws(Exception::class)
     private fun parseItem(): MutableMap<String, Item> {
         val items = HashMap<String, Item>()
-        packages.map { it.getAnnotation(Items::class.java) }
-                .filterNotNull()
+        packages.mapNotNull { it.getAnnotation(Items::class.java) }
                 .forEach({
                     it.items.forEach {
                         items[it.value] = it
@@ -146,7 +140,7 @@ class APIParser private constructor(schemesStr: String, private val host: String
      */
     @Throws(Exception::class)
     private fun parsePath(definitions: MutableMap<String, Any>): MutableMap<String, MutableMap<String, Path>> {
-        val paths = mutableMapOf<String, MutableMap<String, Path>>();
+        val paths = mutableMapOf<String, MutableMap<String, Path>>()
         scanClass().forEach { clazz ->
             val apis = clazz.getAnnotation(APIs::class.java)
             if (apis?.hide == false) {
@@ -245,11 +239,9 @@ class APIParser private constructor(schemesStr: String, private val host: String
             return
         }
         val isMultipart = hasMultipart(service)
-        val url: String
-        if ("" == service.value) {
-            url = arrayOf(apis.value, suffix).joinToString("")
-        } else {
-            url = arrayOf(apis.value, "/", service.value, suffix).joinToString("")
+        val url = when ("" == service.value) {
+            true -> apis.value + suffix
+            false -> arrayOf(apis.value, "/", service.value, suffix).joinToString("")
         }
         var path: MutableMap<String, Path>? = paths[url] // get/psot/put/delete
         if (path == null) {
@@ -272,8 +264,8 @@ class APIParser private constructor(schemesStr: String, private val host: String
         } else { // 未设置operationId，
             p.operationId = method.name
         }
-        var tags = service.tags.filterNotNull()
-        if (service.tags.size == 0) {
+        var tags = service.tags.toList()
+        if (service.tags.isEmpty()) {
             var ns = apis.value
             if (ns.startsWith("/")) {
                 ns = ns.substring(1)
@@ -285,9 +277,9 @@ class APIParser private constructor(schemesStr: String, private val host: String
         if (isMultipart) { // multipart/form-data
             p.consumes = listOf("multipart/form-data")
         } else {
-            p.consumes = service.consumes.filterNotNull()
+            p.consumes = service.consumes.toList()
         }
-        p.produces = service.produces.filterNotNull()
+        p.produces = service.produces.toList()
         p.isDeprecated = service.deprecated
         p.parameters = parseParameters(url, service, isMultipart, definitions)
     }
@@ -357,13 +349,13 @@ class APIParser private constructor(schemesStr: String, private val host: String
                 if (isMultipart && "path" != paramAttr.`in` && "header" != paramAttr.`in`) { // 包含文件上传
                     parameter["in"] = "formData"
                     parameter["type"] = requestParamType
-                } else { // 不包含文件上传
+                } else {
+                    // 不包含文件上传
                     var `in` = paramAttr.`in`
                     if (StringUtils.isBlank(`in`)) {
-                        if ("post".equals(service.method, ignoreCase = true) || "put".equals(service.method, ignoreCase = true)) {
-                            `in` = "formData"
-                        } else {
-                            `in` = "query"
+                        `in` = when ("post".equals(service.method, ignoreCase = true) || "put".equals(service.method, ignoreCase = true)) {
+                            true -> "formData"
+                            false -> "query"
                         }
                     }
                     parameter["in"] = `in`
@@ -405,7 +397,7 @@ class APIParser private constructor(schemesStr: String, private val host: String
             "string" -> values
             "boolean" -> values.map { java.lang.Boolean.parseBoolean(it) }
             "integer" -> values.map { Integer.parseInt(it) }
-            else -> values.map { Double.parseDouble(it) }
+            else -> values.map { java.lang.Double.parseDouble(it) }
         }
     }
 
@@ -425,14 +417,12 @@ class APIParser private constructor(schemesStr: String, private val host: String
     private fun parseTag(): Collection<Tag> {
         // since1.2.2 先扫描被@APITag标注了的类
         val tags = scanClass()
-                .map { clazz -> clazz.getAnnotation(APITag::class.java) }
-                .filterNotNull()
+                .mapNotNull { clazz -> clazz.getAnnotation(APITag::class.java) }
                 .toMutableList()
         // 扫描package-info上面的@APITags
-        packages.map { pk -> pk.getAnnotation(APITags::class.java) }
-                .filterNotNull()
+        packages.mapNotNull { pk -> pk.getAnnotation(APITags::class.java) }
                 .forEach {
-                    tags.addAll(it.tags);
+                    tags.addAll(it.tags)
                 }
         return tags.map {
             val tag = Tag(it.value)
@@ -471,7 +461,7 @@ class APIParser private constructor(schemesStr: String, private val host: String
                     if (prop.required) { // 为必须参数
                         required.add(prop.value)
                     }
-                    if (prop.optionalValue.size > 0) { // 可选值
+                    if (prop.optionalValue.isNotEmpty()) { // 可选值
                         propertie["enum"] = parseOptionalValue(prop.type, prop.optionalValue)
                     }
                     properties[prop.value] = propertie
@@ -536,7 +526,6 @@ class APIParser private constructor(schemesStr: String, private val host: String
     companion object {
 
         private val LOG = LoggerFactory.getLogger(APIParser::class.java)
-        private val DELIMITER = "[;,]"
 
         /**
          * 创建一个解析器。

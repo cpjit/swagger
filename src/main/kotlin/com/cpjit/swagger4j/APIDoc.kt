@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 CPJIT Group.
+ * Copyright 2011-2018 CPJIT Group.
  * 
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,36 +33,20 @@ internal class APIDoc {
     /**
      * @return schemes
      */
-    /**
-     * @param schemes
-     * schemes
-     */
     var schemes = arrayOf("http", "https")
 
     /**
      * @return 全部path
-     */
-    /**
-     * @param paths
-     * 全部path
      */
     var paths: Map<String, Map<String, Path>>? = null
 
     /**
      * @return 全部definition
      */
-    /**
-     * @param definitions
-     * 全部definition
-     */
     var definitions: Map<String, Any>? = null
 
     /**
      * @return 文档信息。
-     */
-    /**
-     * @param info
-     * 文档信息。
      */
     var info: APIDocInfo? = null
 
