@@ -18,6 +18,11 @@ package com.cpjit.swagger4j
 
 import com.alibaba.fastjson.JSONWriter
 import com.cpjit.swagger4j.annotation.*
+import com.cpjit.swagger4j.parameter.BodyParameterResolver
+import com.cpjit.swagger4j.parameter.ParameterResolver
+import com.cpjit.swagger4j.parameter.PrimitiveParameterResolver
+import com.cpjit.swagger4j.parameter.SchemaObjectParameterResolver
+import com.cpjit.swagger4j.specification.*
 import org.apache.commons.lang3.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.core.io.Resource
@@ -43,8 +48,10 @@ class APIParser private constructor(schemesStr: String, private val host: String
                                      */
                                     val file: String, packageToScan: String,
                                     private val basePath: String, description: String, termsOfService: String, title: String, version: String, suffix: String) : APIParseable {
+    private val specificationTranslator = SpecificationTranslatorImpl()
     private val resourcePatternResolver = PathMatchingResourcePatternResolver()
     private val metadataReaderFactory = CachingMetadataReaderFactory(this.resourcePatternResolver)
+    private val parameterResolvers: List<ParameterResolver>
     private var schemes: Array<String>
     var suffix = ""
     var info: APIDocInfo
@@ -52,11 +59,14 @@ class APIParser private constructor(schemesStr: String, private val host: String
      * @return 待解析接口所在包
      */
     private val packageToScan: List<String>
-    private var items: MutableMap<String, Item>? = null
-
     private var packages: Collection<Package>
 
     init {
+        parameterResolvers = listOf(
+                SchemaObjectParameterResolver(),
+                BodyParameterResolver(),
+                PrimitiveParameterResolver()
+        )
         val schemes = when (StringUtils.isNotBlank(schemesStr)) {
             true -> schemesStr.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             false -> arrayOf("http")
@@ -91,39 +101,31 @@ class APIParser private constructor(schemesStr: String, private val host: String
             LOG.debug(arrayOf("生成的文件保存在=>", f.toString()).joinToString(""))
         }
         val writer = JSONWriter(OutputStreamWriter(FileOutputStream(f), "utf-8"))
-        val api = parseAndNotStore() as APIDoc
-        writer.writeObject(api)
+        writer.writeObject(parseAndNotStore())
         writer.flush()
         writer.close()
     }
 
     @Throws(Exception::class)
     override fun parseAndNotStore(): Any {
-        val api = APIDoc()
-        api.schemes = schemes
-        api.host = host
-        api.basePath = basePath
-        api.info = info
+        val spec = Specification()
+        spec.schemes = schemes;
+        spec.host = host
+        spec.basePath = basePath
 
         /* 解析全部item */
-        items = parseItem()
-
+        parseItem(spec)
         /* 解析全部tag */
-        val tags = parseTag()
-        api.tags = tags
-
+        parseTag(spec)
         /* 解析全部definition */
-        val definitions = parseDefinition()
-
+        parseDefinition(spec)
         /* 解析全部path */
-        val paths = parsePath(definitions)
-        api.paths = paths
-        api.definitions = definitions
-        return api
+        parsePath(spec)
+        return specificationTranslator.translate(spec)
     }
 
     @Throws(Exception::class)
-    private fun parseItem(): MutableMap<String, Item> {
+    private fun parseItem(spec: Specification) {
         val items = HashMap<String, Item>()
         packages.mapNotNull { it.getAnnotation(Items::class.java) }
                 .forEach({
@@ -131,26 +133,21 @@ class APIParser private constructor(schemesStr: String, private val host: String
                         items[it.value] = it
                     }
                 })
-        return items
+        spec.items = items
     }
 
 
-    /**
-     * url -> [ path ]
-     */
     @Throws(Exception::class)
-    private fun parsePath(definitions: MutableMap<String, Any>): MutableMap<String, MutableMap<String, Path>> {
-        val paths = mutableMapOf<String, MutableMap<String, Path>>()
+    private fun parsePath(spec: Specification) {
         scanClass().forEach { clazz ->
             val apis = clazz.getAnnotation(APIs::class.java)
             if (apis?.hide == false) {
                 scanAPIMethod(clazz)
                         .forEach {
-                            api2Path(it, apis, paths, definitions)
+                            api2Path(it, apis, spec)
                         }
             }
         }
-        return paths
     }
 
     private fun parseApi(method: Method): Api? {
@@ -233,7 +230,7 @@ class APIParser private constructor(schemesStr: String, private val host: String
         return null
     }
 
-    private fun api2Path(method: Method, apis: APIs, paths: MutableMap<String, MutableMap<String, Path>>, definitions: MutableMap<String, Any>) {
+    private fun api2Path(method: Method, apis: APIs, spec: Specification) {
         val service = parseApi(method)
         if (service!!.hide) {
             return
@@ -243,151 +240,70 @@ class APIParser private constructor(schemesStr: String, private val host: String
             true -> apis.value + suffix
             false -> arrayOf(apis.value, "/", service.value, suffix).joinToString("")
         }
-        var path: MutableMap<String, Path>? = paths[url] // get/psot/put/delete
+        var path: Path? = spec.paths.firstOrNull { it.url.equals(url) } // get/psot/put/delete
         if (path == null) {
-            path = HashMap()
-            paths[url] = path
+            path = Path(url)
+            spec.paths.add(path)
         }
-
-        var p: Path? = path[service.method]
-        if (p == null) {
-            p = Path()
-            path[service.method.toLowerCase()] = p
+        var operation: Operation? = when (service.method.toLowerCase()) {
+            "get" -> path.get
+            "put" -> path.put
+            "post" -> path.post
+            "delete" -> path.delete
+            "head" -> path.head
+            "patch" -> path.patch
+            "options" -> path.options
+            else -> null
+        }
+        if (operation == null) {
+            val operationId = when (StringUtils.isNotBlank(service.operationId)) {
+                true -> service.operationId
+                false -> method.name
+            }
+            operation = Operation(operationId)
+            when (service.method.toLowerCase()) {
+                "get" -> path.get = operation
+                "put" -> path.put = operation
+                "post" -> path.post = operation
+                "delete" -> path.delete = operation
+                "head" -> path.head = operation
+                "patch" -> path.patch = operation
+                "options" -> path.options = operation
+            }
         }
         if (StringUtils.isNotBlank(service.description)) {
-            p.description = service.description
+            operation.description = service.description
         } else {
-            p.description = service.summary
+            operation.description = service.summary
         }
-        if (StringUtils.isNotBlank(service.operationId)) {
-            p.operationId = service.operationId
-        } else { // 未设置operationId，
-            p.operationId = method.name
-        }
-        var tags = service.tags.toList()
-        if (service.tags.isEmpty()) {
+        var tags = service.tags
+        if (service.tags!!.isEmpty()) {
             var ns = apis.value
             if (ns.startsWith("/")) {
                 ns = ns.substring(1)
             }
-            tags = listOf(ns)
+            tags = arrayOf(ns)
         }
-        p.tags = tags
-        p.summary = service.summary
+        operation.tags = tags
+        operation.summary = service.summary
         if (isMultipart) { // multipart/form-data
-            p.consumes = listOf("multipart/form-data")
+            operation.consumes = arrayOf("multipart/form-data")
         } else {
-            p.consumes = service.consumes.toList()
+            operation.consumes = service.consumes
         }
-        p.produces = service.produces.toList()
-        p.isDeprecated = service.deprecated
-        p.parameters = parseParameters(url, service, isMultipart, definitions)
+        operation.produces = service.produces
+        operation.deprecated = service.deprecated
+        operation.parameters = parseParameters(url, service, spec)
     }
 
-    private fun parseParameters(url: String, service: Api, isMultipart: Boolean, definitions: MutableMap<String, Any>): List<MutableMap<String, Any>> {
-        val parameters = ArrayList<MutableMap<String, Any>>() // 请求参数
-        val body = HashMap<String, Any>()
-        val properties = HashMap<String, Any>()
-        val required = ArrayList<String>(service.parameters.size)
-        val useBody = service.parameters
-                .filter({ "body".equals(it.`in`, ignoreCase = true) })
-                .count() > 0
-        if (useBody) {
-            val definition = HashMap<String, Any>()
-            definition["type"] = "object"
-            definition["properties"] = properties
-            definition["required"] = required
-            val definitionName = url.replace("/".toRegex(), "_")
-            definitions[definitionName] = definition
-            body["in"] = "body"
-            body["name"] = "body"
-            val ref = HashMap<String, Any>()
-            ref["\$ref"] = "#/definitions/$definitionName"
-            body["schema"] = ref
-        }
-        /* 解析参数，优先使用schema */
-        for (paramAttr in service.parameters) {
-            val parameter = HashMap<String, Any>()
-            if (StringUtils.isNoneBlank(paramAttr.schema)) { // 处理复杂类型的参数
-                if (isMultipart) { // 当请求的Content-Type为multipart/form-data将忽略复杂类型的参数
-                    throw IllegalArgumentException(arrayOf("请求的Content-Type为multipart/form-data，将忽略复杂类型的请求参数[ ", paramAttr.schema, " ]").joinToString(""))
-                }
-                parameter["in"] = "body"
-                parameter["name"] = "body"
-                val ref = HashMap<String, Any>()
-                ref["\$ref"] = "#/definitions/" + paramAttr.schema
-                parameter["schema"] = ref
-            } else if ("body".equals(paramAttr.`in`, ignoreCase = true)) {
-                val propertie = HashMap<String, Any?>()
-                if (paramAttr.dataType != DataType.UNKNOWN) {
-                    propertie["type"] = paramAttr.dataType.type
-                    propertie["format"] = paramAttr.dataType.format
-                } else {
-                    propertie["type"] = paramAttr.type
-                    propertie["format"] = paramAttr.format
-                }
-                propertie["description"] = paramAttr.description
-                if (paramAttr.required) { // 为必须参数
-                    required.add(paramAttr.name)
-                }
-                if (StringUtils.isNotBlank(paramAttr.items)) { // 可选值
-                    val type = if (paramAttr.dataType != DataType.UNKNOWN) paramAttr.dataType.type else paramAttr.type
-                    propertie["enum"] = parseOptionalValue(type, paramAttr.items.split(",".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray())
-                }
-                properties[paramAttr.name] = propertie
-                continue
-            } else { // 简单类型的参数
-                var requestParamType: String
-                var requestParamFormat: String
-                if (paramAttr.dataType !== DataType.UNKNOWN) { // since 1.2.2
-                    requestParamType = paramAttr.dataType.type
-                    requestParamFormat = paramAttr.dataType.format
-                } else {
-                    requestParamType = paramAttr.type
-                    requestParamFormat = paramAttr.format
-                }
-                if (isMultipart && "path" != paramAttr.`in` && "header" != paramAttr.`in`) { // 包含文件上传
-                    parameter["in"] = "formData"
-                    parameter["type"] = requestParamType
-                } else {
-                    // 不包含文件上传
-                    var `in` = paramAttr.`in`
-                    if (StringUtils.isBlank(`in`)) {
-                        `in` = when ("post".equals(service.method, ignoreCase = true) || "put".equals(service.method, ignoreCase = true)) {
-                            true -> "formData"
-                            false -> "query"
-                        }
-                    }
-                    parameter["in"] = `in`
-                    parameter["type"] = requestParamType
-                    if (StringUtils.isNotBlank(requestParamFormat)) {
-                        parameter["format"] = requestParamFormat
-                    }
-                }
-                parameter["name"] = paramAttr.name
-                parameter["description"] = paramAttr.description
-                parameter["required"] = paramAttr.required
-                if (StringUtils.isNotBlank(paramAttr.items)) {
-                    if (requestParamType != "array") {
-                        throw IllegalArgumentException(arrayOf("请求参数 [ ", paramAttr.name, " ]存在可选值(items)的时候，请求参数类型(type)的值只能为array").joinToString(""))
-                    }
-                    val item = items!![paramAttr.items.trim({ it <= ' ' })]
-                    if (item != null) { // 可选值
-                        val i = HashMap<String, Any>()
-                        i["type"] = item.type
-                        i["default"] = item.defaultValue
-                        i["enum"] = parseOptionalValue(item.type, item.optionalValue)
-                        parameter["items"] = i
-                    }
-                }
-            }
-            if (StringUtils.isNotBlank(paramAttr.defaultValue)) {
-                parameter["defaultValue"] = paramAttr.defaultValue
-            }
-            parameters.add(parameter)
-        }
-        if (properties.size > 0) {
-            parameters.add(body)
+    /**
+     * 解析请求参数。
+     */
+    private fun parseParameters(url: String, api: Api, spec: Specification): List<Parameter> {
+        val parameters: MutableList<Parameter> = mutableListOf()
+        for (param in api.parameters) {
+            val parameterResolver = parameterResolvers.firstOrNull { it.supportsParameter(api, param) }
+            parameterResolver?.resolveParameter(url, api, param, parameters, spec)
         }
         return parameters
     }
@@ -414,21 +330,22 @@ class APIParser private constructor(schemesStr: String, private val host: String
      * @return 全部Tag。
      */
     @Throws(Exception::class)
-    private fun parseTag(): Collection<Tag> {
+    private fun parseTag(spec: Specification) {
         // since1.2.2 先扫描被@APITag标注了的类
         val tags = scanClass()
-                .mapNotNull { clazz -> clazz.getAnnotation(APITag::class.java) }
-                .toMutableList()
+                .mapNotNull { it.getAnnotation(APITag::class.java) }
+                .toMutableSet()
         // 扫描package-info上面的@APITags
-        packages.mapNotNull { pk -> pk.getAnnotation(APITags::class.java) }
+        packages.mapNotNull { it.getAnnotation(APITags::class.java) }
                 .forEach {
                     tags.addAll(it.tags)
                 }
-        return tags.map {
+        spec.tags = tags.map {
             val tag = Tag(it.value)
             tag.description = it.description
             tag
-        }
+        }.toMutableList()
+
     }
 
     /**
@@ -437,39 +354,37 @@ class APIParser private constructor(schemesStr: String, private val host: String
      * @return 全部definition
      */
     @Throws(Exception::class)
-    private fun parseDefinition(): MutableMap<String, Any> {
-        val definitions = HashMap<String, Any>()
-
+    private fun parseDefinition(spec: Specification) {
+        val definitions: MutableList<Schema> = mutableListOf()
         for (pk in packages) {
             val apiSchemas = pk.getAnnotation(APISchemas::class.java) ?: continue
             val schemas = apiSchemas.schemas
             for (schema in schemas) {
-                val definition = HashMap<String, Any>()
-                definition["type"] = schema.type
+                val definition = Schema(schema.value)
+                definition.type = schema.type
                 val required = ArrayList<String>()
-                definition["required"] = required
+                // definition.required = required
                 val props = schema.properties
-                val properties = HashMap<String, MutableMap<String, Any>>()
+                val properties = mutableListOf<Property>()
+                definition.properties = properties;
                 for (prop in props) {
-                    val propertie = HashMap<String, Any>()
-                    definition["properties"] = properties
-
-                    propertie["type"] = prop.type
-                    propertie["format"] = prop.format
-                    propertie["description"] = prop.description
+                    val property = Property()
+                    property.type = prop.type
+                    property.format = prop.format
+                    property.description = prop.description
 
                     if (prop.required) { // 为必须参数
                         required.add(prop.value)
                     }
-                    if (prop.optionalValue.isNotEmpty()) { // 可选值
-                        propertie["enum"] = parseOptionalValue(prop.type, prop.optionalValue)
-                    }
-                    properties[prop.value] = propertie
+//                    if (prop.optionalValue.isNotEmpty()) { // 可选值
+//                        property["enum"] = parseOptionalValue(prop.type, prop.optionalValue)
+//                    }
+                    properties.add(property)
                 }
-                definitions[schema.value] = definition // 添加新的definition
+                definitions.add(definition) // 添加新的definition
             }
         }
-        return definitions
+        spec.definitions = definitions
     }
 
     /*

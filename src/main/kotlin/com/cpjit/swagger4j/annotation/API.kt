@@ -35,7 +35,7 @@ annotation class API(
         /**
          * 分类
          */
-        val tags: Array<String> = arrayOf(),
+        val tags: Array<String> = [],
         /**
          * HTTP请求方式，默认是POST
          */
@@ -66,15 +66,15 @@ annotation class API(
          *
          * @see Param
          */
-        val consumes: Array<String> = arrayOf("application/json; charset=utf-8"),
+        val consumes: Array<String> = ["application/json; charset=utf-8"],
         /**
          * 响应MIME，默认是application/json; charset=utf-8。
          */
-        val produces: Array<String> = arrayOf("application/json; charset=utf-8"),
+        val produces: Array<String> = ["application/json; charset=utf-8"],
         /**
          * 请求参数
          */
-        val parameters: Array<Param> = arrayOf(),
+        val parameters: Array<Param> = [],
         /**
          * 接口是否已经被废弃，默认是false。
          *

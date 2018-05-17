@@ -16,6 +16,8 @@
  */
 package com.cpjit.swagger4j.annotation
 
+import kotlin.reflect.KClass
+
 
 /**
  * 接口的请求参数。
@@ -161,9 +163,16 @@ annotation class Param(
          * @see APISchema
          *
          */
+        @Deprecated("在版本2.1.6中被废弃", replaceWith = ReplaceWith("com.cpjit.swagger4j.annotation.Param.ref"))
         val schema: String = "",
         /**
          * 默认值。
          * @since 2.1.0
          */
-        val defaultValue: String = "")
+        val defaultValue: String = "",
+        /**
+         * 复合对象。
+         * @since 2.1.6
+         */
+        val ref: KClass<*> = Unit::class
+)

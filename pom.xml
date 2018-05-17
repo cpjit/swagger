@@ -6,7 +6,7 @@
 	<packaging>jar</packaging>
 	<version>2.1.6-SNAPSHOT</version>
 	<name>swagger4j</name>
-	<description>swagger4j通过与swagger ui一起快速为您的web项目产生接口文档，并且支持在线测试接口。swagger4j可以很方便的与struts2、spring mvc、servlet集成使用</description>
+	<description>swagger4j通过与swagger ui一起快速为您的web项目产生接口文档，并且支持在线测试接口。swagger4j可以很方便的与struts2、spring mvc</description>
 	<url>https://github.com/cpjit/swagger</url>
 	<developers>
 		<developer>
@@ -111,6 +111,11 @@
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-stdlib</artifactId>
+			<version>${kotlin.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains.kotlin</groupId>
+			<artifactId>kotlin-reflect</artifactId>
 			<version>${kotlin.version}</version>
 		</dependency>
 		<dependency>
