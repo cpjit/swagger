@@ -29,4 +29,9 @@ public @interface Response {
     String description() default "";
 
     Class<?> schemaClass() default Void.class;
+
+    /**
+     * {@link #schemas()} 优于 {@link #schemaClass()}。
+     */
+    Schema[] schemas() default {};
 }

@@ -445,7 +445,8 @@ public final class APIParser implements APIParseable {
         } else {
             url = String.join("", apis.value(), "/", service.value(), suffix);
         }
-        Map<String, Operation> pathMap = paths.get(url); // get/psot/put/delete
+        // get/psot/put/delete
+        Map<String, Operation> pathMap = paths.get(url);
         if (pathMap == null) {
             pathMap = new HashMap<>();
             paths.put(url, pathMap);
@@ -463,7 +464,8 @@ public final class APIParser implements APIParseable {
         }
         if (StringUtils.isNotBlank(service.operationId())) {
             operation.setOperationId(service.operationId());
-        } else { // 未设置operationId，
+        } else {
+            // 未设置operationId，
             operation.setOperationId(method.getName());
         }
         List<String> tags = Arrays.asList(service.tags());
@@ -485,22 +487,44 @@ public final class APIParser implements APIParseable {
         operation.setProduces(Arrays.asList(service.produces()));
         operation.setDeprecated(service.deprecated());
         operation.setParameters(parseParameters(url, service, isMultipart, definitions));
+        operation.setResponses(parseOperationResponses(service));
+    }
 
-        // sine2.2.0 解析返回参数
-        if (ArrayUtils.isNotEmpty(service.responses())) {
-            Map<String, Object> responses = new HashMap<>(service.responses().length);
-            for (Response resp : service.responses()) {
-                Map<String, Object> out = new HashMap<>(1);
-                out.put("description", resp.description());
+    /**
+     * 解析返回参数
+     *
+     * @sine 2.2.0
+     */
+    private Map<String, Object> parseOperationResponses(Api service) {
+        if (ArrayUtils.isEmpty(service.responses())) {
+            return Collections.emptyMap();
+        }
+        Map<String, Object> responses = new HashMap<>(service.responses().length);
+        for (Response resp : service.responses()) {
+            Map<String, Object> out = new HashMap<>(1);
+            out.put("description", resp.description());
+            Map<String, Object> schema = new HashMap<>(2);
+            Map<String, Object> properties = new HashMap<>(16);
+            schema.put("type", "object");
+            schema.put("properties", properties);
+            if (resp.schemas().length > 0) {
+                for (Schema item : resp.schemas()) {
+                    Map<String, Object> property = new HashMap<>(2);
+                    property.put("type", item.dataType().type());
+                    if (item.dataType().format() != null) {
+                        property.put("format", item.dataType().format());
+                    }
+                    if (StringUtils.isNotBlank(item.description())) {
+                        property.put("description", item.description());
+                    }
+                    properties.put(item.value(), property);
+                }
+            } else {
                 Class<?> schemaClass = resp.schemaClass();
                 if (Void.class.equals(schemaClass)) {
                     continue;
                 }
                 PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(schemaClass);
-                Map<String, Object> schema = new HashMap<>(2);
-                Map<String, Object> properties = new HashMap<>(pds.length);
-                schema.put("type", "object");
-                schema.put("properties", properties);
                 for (PropertyDescriptor pd : pds) {
                     if (pd.getName().equals("class")) {
                         continue;
@@ -513,11 +537,11 @@ public final class APIParser implements APIParseable {
                     }
                     properties.put(pd.getName(), property);
                 }
-                out.put("schema", schema);
-                responses.put(resp.statusCode(), out);
             }
-            operation.setResponses(responses);
+            out.put("schema", schema);
+            responses.put(resp.statusCode(), out);
         }
+        return responses;
     }
 
     private List<Map<String, Object>> parseParameters(String url, Api service, boolean isMultipart, Map<String, Object> definitions) {

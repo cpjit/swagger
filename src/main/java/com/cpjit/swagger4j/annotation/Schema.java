@@ -25,7 +25,14 @@ import java.lang.annotation.Target;
  * @author yonghuan
  * @since 2.2.0
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Schema {
+
+    String value();
+
+    DataType dataType();
+
+    String description() default "";
+
 }
