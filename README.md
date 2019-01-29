@@ -165,7 +165,7 @@ public void login(HttpServletResponse response, String username, String password
 <ul>
   <li>query - 参数拼接到url中</li>
   <li>body - 参数直接放入请求体中</li>
-  <li>path - restful风格的参数传递</li>
+  <li>operation - restful风格的参数传递</li>
   <li>header - 参数放在请求头中</li>
   <li>formData - 参数通过form表单提交</li>
  </ul> 

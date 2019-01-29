@@ -16,29 +16,17 @@
  */
 package com.cpjit.swagger4j.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * @author yonghaun
- * @since 1.0.0
- * @deprecated 在2.2.0中被废弃。
+ * @since 2.2.0
  */
-@Deprecated
-@Target(ElementType.PACKAGE)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface APISchema {
-	/** 名称 */
-	String value();
+public @interface Response {
 
-	/** 类型，默认是object */
-	String type() default "object";
+    String statusCode() default "default";
 
-	/** 属性集合 */
-	APISchemaPropertie[] properties();
+    /**
+     * Required. A short description of the response. GFM syntax can be used for rich text representation.
+     */
+    String description() default "";
 
-	/** 序列化为XML的根元素名 */
-	String xml();
+    Class<?> schemaClass() default Void.class;
 }

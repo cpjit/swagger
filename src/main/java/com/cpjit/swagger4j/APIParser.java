@@ -16,28 +16,13 @@
  */
 package com.cpjit.swagger4j;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import com.alibaba.fastjson.JSONWriter;
 import com.cpjit.swagger4j.annotation.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -45,7 +30,15 @@ import org.springframework.core.type.ClassMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 
-import com.alibaba.fastjson.JSONWriter;
+import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 接口解析器。
@@ -324,7 +317,7 @@ public final class APIParser implements APIParseable {
         Map<String, Object> definitions = parseDefinition();
 
         /* 解析全部path */
-        Map<String, Map<String, Path>> paths = parsePath(definitions);
+        Map<String, Map<String, Operation>> paths = parsePath(definitions);
         api.setPaths(paths);
         api.setDefinitions(definitions);
         return api;
@@ -342,15 +335,15 @@ public final class APIParser implements APIParseable {
     /**
      * url -> [ path ]
      */
-    private Map<String, Map<String, Path>> parsePath(Map<String, Object> definitions) throws Exception {
-        Map<String, Map<String, Path>> paths = new HashMap<>();
+    private Map<String, Map<String, Operation>> parsePath(Map<String, Object> definitions) throws Exception {
+        Map<String, Map<String, Operation>> paths = new HashMap<>();
         scanClass().forEach(clazz -> {
             APIs apis = clazz.getAnnotation(APIs.class);
             if (apis == null || apis.hide()) {
                 return;
             }
             scanAPIMethod(clazz)
-                    .forEach(method -> api2Path(method, apis, paths, definitions));
+                    .forEach(method -> api2Operation(method, apis, paths, definitions));
         });
         return paths;
     }
@@ -370,6 +363,7 @@ public final class APIParser implements APIParseable {
             api.produces = apiAnnotation.produces();
             api.summary = apiAnnotation.summary();
             api.value = apiAnnotation.value();
+            api.responses = apiAnnotation.responses();
             return api;
         }
         Get get = method.getAnnotation(Get.class);
@@ -385,6 +379,7 @@ public final class APIParser implements APIParseable {
             api.produces = get.produces();
             api.summary = get.summary();
             api.value = get.value();
+            api.responses = get.responses();
             return api;
         }
         Post post = method.getAnnotation(Post.class);
@@ -400,6 +395,7 @@ public final class APIParser implements APIParseable {
             api.produces = post.produces();
             api.summary = post.summary();
             api.value = post.value();
+            api.responses = post.responses();
             return api;
         }
         Put put = method.getAnnotation(Put.class);
@@ -415,6 +411,7 @@ public final class APIParser implements APIParseable {
             api.produces = put.produces();
             api.summary = put.summary();
             api.value = put.value();
+            api.responses = put.responses();
             return api;
         }
         Delete delete = method.getAnnotation(Delete.class);
@@ -430,12 +427,13 @@ public final class APIParser implements APIParseable {
             api.produces = delete.produces();
             api.summary = delete.summary();
             api.value = delete.value();
+            api.responses = delete.responses();
             return api;
         }
         return null;
     }
 
-    private void api2Path(Method method, APIs apis, Map<String, Map<String, Path>> paths, Map<String, Object> definitions) {
+    private void api2Operation(Method method, APIs apis, Map<String, Map<String, Operation>> paths, Map<String, Object> definitions) {
         Api service = parseApi(method);
         if (service.hide()) {
             return;
@@ -447,26 +445,26 @@ public final class APIParser implements APIParseable {
         } else {
             url = String.join("", apis.value(), "/", service.value(), suffix);
         }
-        Map<String, Path> path = paths.get(url); // get/psot/put/delete
-        if (path == null) {
-            path = new HashMap<>();
-            paths.put(url, path);
+        Map<String, Operation> pathMap = paths.get(url); // get/psot/put/delete
+        if (pathMap == null) {
+            pathMap = new HashMap<>();
+            paths.put(url, pathMap);
         }
 
-        Path p = path.get(service.method());
-        if (p == null) {
-            p = new Path();
-            path.put(service.method().toLowerCase(), p);
+        Operation operation = pathMap.get(service.method());
+        if (operation == null) {
+            operation = new Operation();
+            pathMap.put(service.method().toLowerCase(), operation);
         }
         if (StringUtils.isNotBlank(service.description())) {
-            p.setDescription(service.description());
+            operation.setDescription(service.description());
         } else {
-            p.setDescription(service.summary());
+            operation.setDescription(service.summary());
         }
         if (StringUtils.isNotBlank(service.operationId())) {
-            p.setOperationId(service.operationId());
+            operation.setOperationId(service.operationId());
         } else { // 未设置operationId，
-            p.setOperationId(method.getName());
+            operation.setOperationId(method.getName());
         }
         List<String> tags = Arrays.asList(service.tags());
         if (service.tags().length == 0) {
@@ -476,20 +474,55 @@ public final class APIParser implements APIParseable {
             }
             tags = Collections.singletonList(ns);
         }
-        p.setTags(tags);
-        p.setSummary(service.summary());
-        if (isMultipart) { // multipart/form-data
-            p.setConsumes(Collections.singletonList("multipart/form-data"));
+        operation.setTags(tags);
+        operation.setSummary(service.summary());
+        if (isMultipart) {
+            // multipart/form-data
+            operation.setConsumes(Collections.singletonList("multipart/form-data"));
         } else {
-            p.setConsumes(Arrays.asList(service.consumes()));
+            operation.setConsumes(Arrays.asList(service.consumes()));
         }
-        p.setProduces(Arrays.asList(service.produces()));
-        p.setDeprecated(service.deprecated());
-        p.setParameters(parseParameters(url, service, isMultipart, definitions));
+        operation.setProduces(Arrays.asList(service.produces()));
+        operation.setDeprecated(service.deprecated());
+        operation.setParameters(parseParameters(url, service, isMultipart, definitions));
+
+        // sine2.2.0 解析返回参数
+        if (ArrayUtils.isNotEmpty(service.responses())) {
+            Map<String, Object> responses = new HashMap<>(service.responses().length);
+            for (Response resp : service.responses()) {
+                Map<String, Object> out = new HashMap<>(1);
+                out.put("description", resp.description());
+                Class<?> schemaClass = resp.schemaClass();
+                if (Void.class.equals(schemaClass)) {
+                    continue;
+                }
+                PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(schemaClass);
+                Map<String, Object> schema = new HashMap<>(2);
+                Map<String, Object> properties = new HashMap<>(pds.length);
+                schema.put("type", "object");
+                schema.put("properties", properties);
+                for (PropertyDescriptor pd : pds) {
+                    if (pd.getName().equals("class")) {
+                        continue;
+                    }
+                    Map<String, Object> property = new HashMap<>(2);
+                    DataType dataType = DataType.valueOf(pd.getPropertyType());
+                    property.put("type", dataType.type());
+                    if (dataType.format() != null) {
+                        property.put("format", dataType.format());
+                    }
+                    properties.put(pd.getName(), property);
+                }
+                out.put("schema", schema);
+                responses.put(resp.statusCode(), out);
+            }
+            operation.setResponses(responses);
+        }
     }
 
     private List<Map<String, Object>> parseParameters(String url, Api service, boolean isMultipart, Map<String, Object> definitions) {
-        List<Map<String, Object>> parameters = new ArrayList<>(); // 请求参数
+        // 请求参数
+        List<Map<String, Object>> parameters = new ArrayList<>();
         Map<String, Object> body = new HashMap<>();
         Map<String, Object> properties = new HashMap<>();
         List<String> required = new ArrayList<>(service.parameters().length);
@@ -512,7 +545,7 @@ public final class APIParser implements APIParseable {
         /* 解析参数，优先使用schema */
         for (Param paramAttr : service.parameters()) {
             Map<String, Object> parameter = new HashMap<>();
-            if (paramAttr.schema() != null && !paramAttr.schema().trim().equals("")) { // 处理复杂类型的参数
+            if (paramAttr.schema() != null && !"".equals(paramAttr.schema().trim())) { // 处理复杂类型的参数
                 if (isMultipart) { // 当请求的Content-Type为multipart/form-data将忽略复杂类型的参数
                     throw new IllegalArgumentException(String.join("", "请求的Content-Type为multipart/form-data，将忽略复杂类型的请求参数[ ", paramAttr.schema(), " ]"));
                 }
@@ -569,8 +602,8 @@ public final class APIParser implements APIParseable {
                 parameter.put("name", paramAttr.name());
                 parameter.put("description", paramAttr.description());
                 parameter.put("required", paramAttr.required());
-                if (paramAttr.items() != null && !paramAttr.items().trim().equals("")) {
-                    if (!requestParamType.equals("array")) {
+                if (paramAttr.items() != null && !"".equals(paramAttr.items().trim())) {
+                    if (!"array".equals(requestParamType)) {
                         throw new IllegalArgumentException(String.join("", "请求参数 [ ", paramAttr.name(), " ]存在可选值(items)的时候，请求参数类型(type)的值只能为array"));
                     }
                     Item item = items.get(paramAttr.items().trim());
@@ -595,13 +628,13 @@ public final class APIParser implements APIParseable {
     }
 
     private Object parseOptionalValue(String type, String[] values) {
-        if (type.equals("string")) { // string
+        if ("string".equals(type)) { // string
             return values;
-        } else if (type.equals("boolean")) { // boolean
+        } else if ("boolean".equals(type)) { // boolean
             return Arrays.stream(values)
                     .map(Boolean::parseBoolean)
                     .collect(Collectors.toList());
-        } else if (type.equals("integer")) { // integer
+        } else if ("integer".equals(type)) { // integer
             return Arrays.stream(values)
                     .mapToInt(Integer::parseInt)
                     .toArray();
@@ -687,7 +720,7 @@ public final class APIParser implements APIParseable {
         return definitions;
     }
 
-    /*
+    /**
      * 扫描所有用注解{@link API}修饰了的方法。
      *
      * @return 所有用注解{@link API}修饰了的方法
@@ -748,6 +781,7 @@ public final class APIParser implements APIParseable {
         private Param[] parameters = {};
         private boolean deprecated;
         private boolean hide;
+        private Response[] responses;
 
         String value() {
             return value;
@@ -791,6 +825,10 @@ public final class APIParser implements APIParseable {
 
         boolean hide() {
             return hide;
+        }
+
+        Response[] responses() {
+            return responses;
         }
     }
 }

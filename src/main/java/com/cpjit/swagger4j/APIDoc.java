@@ -53,12 +53,12 @@ class APIDoc {
 		this.schemes = schemes;
 	}
 
-	private Map<String, Map<String, Path>> paths;
+	private Map<String, Map<String, Operation>> paths;
 
 	/**
 	 * @return 全部path
 	 */
-	public Map<String, Map<String, Path>> getPaths() {
+	public Map<String, Map<String, Operation>> getPaths() {
 		return paths;
 	}
 
@@ -66,7 +66,7 @@ class APIDoc {
 	 * @param paths
 	 *            全部path
 	 */
-	public void setPaths(Map<String, Map<String, Path>> paths) {
+	public void setPaths(Map<String, Map<String, Operation>> paths) {
 		this.paths = paths;
 	}
 

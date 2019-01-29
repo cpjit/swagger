@@ -22,23 +22,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author yonghaun
- * @since 1.0.0
- * @deprecated 在2.2.0中被废弃。
+ * @since 2.2.0
  */
-@Deprecated
-@Target(ElementType.PACKAGE)
+@Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface APISchema {
-	/** 名称 */
-	String value();
+public @interface Property {
 
-	/** 类型，默认是object */
-	String type() default "object";
+    String value() default "";
 
-	/** 属性集合 */
-	APISchemaPropertie[] properties();
+    boolean required() default false;
 
-	/** 序列化为XML的根元素名 */
-	String xml();
 }

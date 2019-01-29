@@ -16,10 +16,7 @@
  */
 package com.cpjit.swagger4j.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * 该注解表示方法为一个接口。
@@ -100,4 +97,11 @@ public @interface API {
      * @since 1.2.2
      */
     boolean hide() default false;
+
+    /**
+     * 接口返回信息。
+     *
+     * @since 2.2.0
+     */
+    Response[]  responses() default {};
 }

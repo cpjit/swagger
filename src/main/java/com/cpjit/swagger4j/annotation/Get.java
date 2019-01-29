@@ -90,4 +90,10 @@ public @interface Get {
      */
     boolean hide() default false;
 
+    /**
+     * 接口返回信息。
+     *
+     * @since 2.2.0
+     */
+    Response[] responses() default {};
 }
