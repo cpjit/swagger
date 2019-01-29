@@ -28,8 +28,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Property {
 
+    /**
+     * 属性名。
+     */
     String value() default "";
-
-    boolean required() default false;
 
 }
