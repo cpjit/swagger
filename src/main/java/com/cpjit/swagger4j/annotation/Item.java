@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 CPJIT Group.
+ * Copyright 2011-2019 CPJIT Group.
  * 
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,21 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License. 
  */
-package com.cpjit.swagger4j.annotation
+package com.cpjit.swagger4j.annotation;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author yonghaun
  * @since 1.0.0
  */
-@Target
-@Retention
-annotation class Item(
-        /** 名称  */
-        val value: String,
-        /** 数据类型  */
-        val type: String,
-        /** 可选值  */
-        val optionalValue: Array<String>,
-        /** 默认值  */
-        val defaultValue: String)
+@Target(ElementType.PACKAGE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Item {
+	/** 名称 */
+	String value();
+
+	/** 数据类型 */
+	String type();
+
+	/** 可选值 */
+	String[] optionalValue();
+
+	/** 默认值 */
+	String defaultValue();
+}

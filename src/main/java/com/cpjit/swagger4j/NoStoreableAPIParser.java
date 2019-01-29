@@ -1,7 +1,7 @@
 /*
- * Copyright 2011-2018 CPJIT Group.
- * 
- * 
+ * Copyright 2011-2019 CPJIT Group.
+ *
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,22 +12,21 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
+ * limitations under the License.
  */
-package com.cpjit.swagger4j
+package com.cpjit.swagger4j;
 
 /**
- * @author yonghaun
+ * 解析接口，但不把解析结果保存到文件中。
+ *
+ * @author yonghuan
  * @since 1.0.0
  */
-interface APIParseable : NoStoreableAPIParser {
-
-    @Throws(Exception::class)
-    override fun parseAndNotStore(): Any
-
+public interface NoStoreableAPIParser {
     /**
-     * 解析接口并把结果已JSON格式写入文件。
+     * 解析接口，但不把解析结果保存到文件中。
+     *
+     * @return 解析结果
      */
-    @Throws(Exception::class)
-    fun parse()
+    Object parseAndNotStore() throws Exception;
 }
