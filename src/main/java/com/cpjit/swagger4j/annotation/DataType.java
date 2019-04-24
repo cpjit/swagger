@@ -17,9 +17,7 @@
 package com.cpjit.swagger4j.annotation;
 
 import java.time.LocalDate;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
+import java.util.*;
 
 /**
  * 请求参数的数据类型。
@@ -93,6 +91,16 @@ public enum DataType {
         this.format = format;
     }
 
+    private final static Map<Class<?>, DataType> TYPE_MAP = new HashMap<Class<?>, DataType>() {{
+        put(Integer.class, INTEGER);
+        put(Long.class, LONG);
+        put(Float.class, FLOAT);
+        put(Double.class, DOUBLE);
+        put(Date.class, DATE_TIME);
+        put(java.sql.Date.class, DATE_TIME);
+        put(LocalDate.class, DATE_TIME);
+    }};
+
     /**
      * @since 2.2.0
      */
@@ -100,26 +108,15 @@ public enum DataType {
         if (clazz == null) {
             return UNKNOWN;
         }
-        if (Integer.class.equals(clazz)) {
-            return INTEGER;
-        }
-        if (Long.class.equals(clazz)) {
-            return LONG;
-        }
-        if (Float.class.equals(clazz)) {
-            return LONG;
-        }
-        if (Double.class.equals(clazz)) {
-            return DOUBLE;
+        DataType dataType = TYPE_MAP.get(clazz);
+        if (dataType != null) {
+            return dataType;
         }
         if (CharSequence.class.isAssignableFrom(clazz)) {
             return STRING;
         }
         if (Calendar.class.isAssignableFrom(clazz)) {
             return DATE;
-        }
-        if (Date.class.equals(clazz) || java.sql.Date.class.equals(clazz) || LocalDate.class.equals(clazz)) {
-            return DATE_TIME;
         }
         if (Collection.class.isAssignableFrom(clazz) || clazz.isArray()) {
             return ARRAY;
