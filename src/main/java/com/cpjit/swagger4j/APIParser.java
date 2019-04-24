@@ -510,9 +510,9 @@ public final class APIParser implements APIParseable {
             if (resp.schemas().length > 0) {
                 for (Schema item : resp.schemas()) {
                     Map<String, Object> property = new HashMap<>(2);
-                    property.put("type", item.dataType().type());
-                    if (item.dataType().format() != null) {
-                        property.put("format", item.dataType().format());
+                    property.put("type", item.dataType().type);
+                    if (item.dataType().format != null) {
+                        property.put("format", item.dataType().format);
                     }
                     if (StringUtils.isNotBlank(item.description())) {
                         property.put("description", item.description());
@@ -531,9 +531,9 @@ public final class APIParser implements APIParseable {
                     }
                     Map<String, Object> property = new HashMap<>(2);
                     DataType dataType = DataType.valueOf(pd.getPropertyType());
-                    property.put("type", dataType.type());
-                    if (dataType.format() != null) {
-                        property.put("format", dataType.format());
+                    property.put("type", dataType.type);
+                    if (dataType.format != null) {
+                        property.put("format", dataType.format);
                     }
                     properties.put(pd.getName(), property);
                 }
@@ -581,8 +581,8 @@ public final class APIParser implements APIParseable {
             } else if ("body".equalsIgnoreCase(paramAttr.in())) {
                 Map<String, Object> propertie = new HashMap<>();
                 if (paramAttr.dataType() != null) {
-                    propertie.put("type", paramAttr.dataType().type());
-                    propertie.put("format", paramAttr.dataType().format());
+                    propertie.put("type", paramAttr.dataType().type);
+                    propertie.put("format", paramAttr.dataType().format);
                 } else {
                     propertie.put("type", paramAttr.type());
                     propertie.put("format", paramAttr.format());
@@ -599,8 +599,8 @@ public final class APIParser implements APIParseable {
             } else { // 简单类型的参数
                 String requestParamType, requestParamFormat;
                 if (paramAttr.dataType() != DataType.UNKNOWN) { // since 1.2.2
-                    requestParamType = paramAttr.dataType().type();
-                    requestParamFormat = paramAttr.dataType().format();
+                    requestParamType = paramAttr.dataType().type;
+                    requestParamFormat = paramAttr.dataType().format;
                 } else {
                     requestParamType = paramAttr.type();
                     requestParamFormat = paramAttr.format();

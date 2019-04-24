@@ -85,17 +85,8 @@ public enum DataType {
      */
     FILE("file", "");
 
-    private String type;
-
-    public String type() {
-        return type;
-    }
-
-    private String format;
-
-    public String format() {
-        return format;
-    }
+    public final String type;
+    public final String format;
 
     DataType(String type, String format) {
         this.type = type;
