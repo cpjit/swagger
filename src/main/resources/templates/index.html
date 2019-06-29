@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title th:text="${apiTitle}"></title>
+    <link th:href='@{{baseUrl}/css/typography.css(baseUrl=${baseUrl})}' media='screen' rel='stylesheet' type='text/css'/>
+    <link th:href='@{{baseUrl}/css/reset.css(baseUrl=${baseUrl})}' media='screen' rel='stylesheet' type='text/css'/>
+    <link th:href='@{{baseUrl}/css/screen.css(baseUrl=${baseUrl})}' media='screen' rel='stylesheet' type='text/css'/>
+    <link th:href='@{{baseUrl}/css/reset.css(baseUrl=${baseUrl})}' media='print' rel='stylesheet' type='text/css'/>
+    <link th:href='@{{baseUrl}/css/print.css(baseUrl=${baseUrl})}' media='print' rel='stylesheet' type='text/css'/>
+    <script th:src='@{{baseUrl}/lib/object-assign-pollyfill.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/jquery-1.8.0.min.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/jquery.slideto.min.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/jquery.wiggle.min.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/jquery.ba-bbq.min.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/handlebars-4.0.5.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/lodash.min.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/backbone-min.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/swagger-ui.min.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/highlight.9.1.0.pack.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/highlight.9.1.0.pack_extended.js(baseUrl=${baseUrl})}'
+            type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/jsoneditor.min.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lib/marked.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lang/translator.js(baseUrl=${baseUrl})}' type='text/javascript'></script>
+    <script th:src='@{{baseUrl}/lang/{lang}.js(baseUrl=${baseUrl},lang=${lang})}' type='text/javascript'></script>
+
+    <script type="text/javascript">
+        $(function () {
+            //var url = window.location.search.match(/url=([^&]+)/);
+            // if (url && url.length > 1) {
+            //  url = decodeURIComponent(url[1]);
+            //} else {
+            //  url = "restful.json";
+            // }
+            var url = '[[${getApisUrl}]]';
+            // Pre load translate...
+            if (window.SwaggerTranslator) {
+                window.SwaggerTranslator.translate();
+            }
+            window.swaggerUi = new SwaggerUi({
+                url: url,
+                dom_id: "swagger-ui-container",
+                supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+                onComplete: function (swaggerApi, swaggerUi) {
+                    if (typeof initOAuth == "function") {
+                        initOAuth({
+                            clientId: "your-client-id",
+                            clientSecret: "your-client-secret",
+                            realm: "your-realms",
+                            appName: "your-app-name",
+                            scopeSeparator: ","
+                        });
+                    }
+
+                    if (window.SwaggerTranslator) {
+                        window.SwaggerTranslator.translate();
+                    }
+
+                    $('pre code').each(function (i, e) {
+                        hljs.highlightBlock(e)
+                    });
+
+                    addApiKeyAuthorization();
+                },
+                onFailure: function (data) {
+                    log("Unable to Load SwaggerUI");
+                },
+                docExpansion: "none",
+                apisSorter: "alpha",
+                showRequestHeaders: false
+            });
+
+            function addApiKeyAuthorization() {
+                //var key = encodeURIComponent($('#input_apiKey')[0].value);
+                //if(key && key.trim() != "") {
+                //    var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization("api_key", key, "query");
+                //    window.swaggerUi.api.clientAuthorizations.add("api_key", apiKeyAuth);
+                //    log("added key " + key);
+                //}
+            }
+
+            $('#input_apiKey').change(addApiKeyAuthorization);
+
+            // if you have an apiKey you would like to pre-populate on the page for demonstration purposes...
+            /*
+              var apiKey = "myApiKeyXXXX123456789";
+              $('#input_apiKey').val(apiKey);
+            */
+
+            window.swaggerUi.load();
+
+            function log() {
+                if ('console' in window) {
+                    console.log.apply(console, arguments);
+                }
+            }
+        });
+    </script>
+</head>
+
+<body class="swagger-section">
+<div id='header'>
+    <div class="swagger-ui-wrap">
+        <a id="logo" href="#" th:text="${apiTitle }"></a>
+
+        <form id='api_selector'>
+            <div class='input'><input disabled placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl"
+                                      type="text"/></div>
+            <!--
+            <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>
+            -->
+            <div class='input'><a id="explore" href="#" data-sw-translate>Explore</a></div>
+        </form>
+
+    </div>
+</div>
+
+<div id="message-bar" class="swagger-ui-wrap" data-sw-translate>&nbsp;</div>
+<div id="swagger-ui-container" class="swagger-ui-wrap"></div>
+</body>
+</html>
