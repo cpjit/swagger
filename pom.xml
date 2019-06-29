@@ -115,6 +115,7 @@
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf</artifactId>
             <version>3.0.11.RELEASE</version>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

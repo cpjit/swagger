@@ -66,7 +66,7 @@ public class SwaggerFilter implements Filter {
         String urlPatternMapping = urlPatternMappings.iterator().next().replaceAll("\\*", "");
         urlPrefix = contextPath + urlPatternMapping;
         urlPrefix = urlPrefix.replaceAll("/{2,}", "/");
-        if (urlPrefix.endsWith("/")) {
+        if (!"/".equals(urlPrefix) && urlPrefix.endsWith("/")) {
             urlPrefix = urlPrefix.substring(0, urlPrefix.length() - 1);
         }
         requestMatchers = Arrays.stream(RESOURCE_PATTERNS)

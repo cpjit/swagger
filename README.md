@@ -20,32 +20,43 @@ JDK1.6+
 <dependency>
 	<groupId>com.cpjit</groupId>
 	<artifactId>swagger4j</artifactId>
-	<version>2.1.5</version>
+	<version>2.2.0-SNAPSHOT</version>
 </dependency>
 ```
 
 ## 三. 配置
 ### 1. 选择使用方式
 您可以通过三种方式来使用`swagger4j`。
-* 与strut2集成</br>
-如果您的web项目是基于`strut2`的，您可以在您的strut2配置文件中加入如下代码来快速集成`swagger4j`：
+* 与strut2、SpringMVC、Servlet集成</br>
+如果您的web项目是基于`strut2`或`SpringMVC`或`servlet`的，您可以在您的web.xml文件中加入如下代码来快速集成`swagger4j`：
 ```xml
-   <constant name="struts.enable.DynamicMethodInvocation" value="true" />
-   <constant name="struts.devMode" value="true" />
-
-	<package name="api" namespace="/api" extends="struts-default" >
-		<action name="*" class="com.cpjit.swagger4j.support.struts2.ApiAction" method="{0}">
-		</action>
-	</package>
+   <filter>
+      <filter-name>swaggerServlet</filter-name>
+      <filter-class>com.cpjit.swagger4j.SwaggerFilter</filter-class>
+   </filter>
+   <filter-mapping>
+      <filter-name>swaggerServlet</filter-name>
+      <url-pattern>/doc/*</url-pattern>
+   </filter-mapping>
 ```
-* 与spring mvc集成 </br>
-如果您的web项目是基于`spring mvc`的，您可以在您的spring mvc配置文件中加入如下代码来快速集成`swagger4j`：
-```xml
- <context:component-scan base-package="com.cpjit.swagger4j" />
+* 与spring-boot集成 </br>
+如果您的项目是基于`spring-boot`的，您可以创建一个配置类来快速集成`swagger4j`：
+```java
+@Configuration
+public class SwaggerConfig {
+    @Bean
+    public FilterRegistrationBean swaggerFilter() {
+        FilterRegistrationBean bean = new FilterRegistrationBean();
+        SwaggerFilter filter = new SwaggerFilter();
+        bean.setFilter(filter);
+        bean.setUrlPatterns(Collections.singletonList("/doc/*"));
+        return bean;
+    }
+}
 ```
 ### 2. 修改配置项
 您需要在项目的源文件目录下添加一个`swagger.properties`文件，并加入以下配置项：
-```java
+```properties
 packageToScan=com.cpjit.swagger4j.action
 apiDescription=Swagger Demo
 apiTitle=Swagger Demo
@@ -56,7 +67,7 @@ devMode=true
 `swagger4j`的配置信息都必须写在`swagger.properties`文件里面。具体的配置项及其说明如下：
 <table>
 	<thead>
-		<tr><th>键</th><th>说明</th><th>c</th></tr>
+		<tr><th>键</th><th>说明</th><th>支持版本</th></tr>
 	</thead>
 	<tbody>
 		<tr><th>apiFile</th><th>扫描生成json文件的存放路径</th><th></th></tr>
@@ -70,7 +81,7 @@ devMode=true
 		<tr><th>devMode</th><th>是否启用开发模式，如果开启则每次获取接口文档的时候都会扫描类</th><th></th></tr>
 		<tr><th>suffix</th><th>接口请求地址后缀，如.action</th><th></th></tr>
 		<tr><th>disabled</th><th>是否关闭swagger4j，一般用于生产环境</th><th></th></tr>
-		<tr><th>schemes</th><th>支持的请求协议，如http、https</th><th></th>v2.1.4</tr>
+		<tr><th>schemes</th><th>支持的请求协议，如http、https</th><td>v2.1.4+</td></tr>
 	</tbody>
 </table>
 
