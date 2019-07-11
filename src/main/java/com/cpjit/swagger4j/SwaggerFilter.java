@@ -6,6 +6,7 @@ import java.util.Collection;
 
 /**
  * @author yonghuan
+ * @see com.cpjit.swagger4j.support.servlet.ApiServlet
  * @since 2.2.0
  */
 public class SwaggerFilter implements Filter {

@@ -18,17 +18,14 @@ package com.cpjit.swagger4j;
 
 import com.alibaba.fastjson.JSONWriter;
 import com.cpjit.swagger4j.annotation.*;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ScanResult;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.core.type.ClassMetadata;
-import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -71,13 +68,11 @@ import java.util.stream.Stream;
 public final class APIParser implements APIParseable {
 
     private final static Logger LOG = LoggerFactory.getLogger(APIParser.class);
-    private final ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-    private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(this.resourcePatternResolver);
     private final static String DELIMITER = "[;,]";
     private String[] schemes;
     private String host;
     private String basePath;
-    private String suffix = "";
+    private String suffix;
     private APIDocInfo info;
     private String file;
     private List<String> packageToScan;
@@ -89,7 +84,7 @@ public final class APIParser implements APIParseable {
      * @param props properties。
      * @see APIParser.Builder
      */
-    public final static APIParser newInstance(Properties props) throws IOException {
+    public static APIParser newInstance(Properties props) throws IOException {
         String[] packageToScan = props.getProperty("packageToScan").split(DELIMITER);
         String schemesStr = props.getProperty("schemes");
         String[] schemes;
@@ -323,7 +318,7 @@ public final class APIParser implements APIParseable {
         return api;
     }
 
-    private Map<String, Item> parseItem() throws Exception {
+    private Map<String, Item> parseItem() {
         return packages.stream()
                 .filter(pk -> pk.getAnnotation(Items.class) != null)
                 .map(pk -> pk.getAnnotation(Items.class))
@@ -588,27 +583,33 @@ public final class APIParser implements APIParseable {
                     propertie.put("format", paramAttr.format());
                 }
                 propertie.put("description", paramAttr.description());
-                if (paramAttr.required()) { // 为必须参数
+                // 为必须参数
+                if (paramAttr.required()) {
                     required.add(paramAttr.name());
                 }
-                if (StringUtils.isNotBlank(paramAttr.items())) { // 可选值
+                // 可选值
+                if (StringUtils.isNotBlank(paramAttr.items())) {
                     propertie.put("enum", parseOptionalValue(paramAttr.type(), paramAttr.items().split(",")));
                 }
                 properties.put(paramAttr.name(), propertie);
                 continue;
-            } else { // 简单类型的参数
+            } else {
+                // 简单类型的参数
                 String requestParamType, requestParamFormat;
-                if (paramAttr.dataType() != DataType.UNKNOWN) { // since 1.2.2
+                // since 1.2.2
+                if (paramAttr.dataType() != DataType.UNKNOWN) {
                     requestParamType = paramAttr.dataType().type;
                     requestParamFormat = paramAttr.dataType().format;
                 } else {
                     requestParamType = paramAttr.type();
                     requestParamFormat = paramAttr.format();
                 }
-                if (isMultipart && !"path".equals(paramAttr.in()) && !"header".equals(paramAttr.in())) { // 包含文件上传
+                if (isMultipart && !"path".equals(paramAttr.in()) && !"header".equals(paramAttr.in())) {
+                    // 包含文件上传
                     parameter.put("in", "formData");
                     parameter.put("type", requestParamType);
-                } else { // 不包含文件上传
+                } else {
+                    // 不包含文件上传
                     String in = paramAttr.in();
                     if (StringUtils.isBlank(in)) {
                         if ("post".equalsIgnoreCase(service.method()) || "put".equalsIgnoreCase(service.method())) {
@@ -652,17 +653,21 @@ public final class APIParser implements APIParseable {
     }
 
     private Object parseOptionalValue(String type, String[] values) {
-        if ("string".equals(type)) { // string
+        if ("string".equals(type)) {
+            // string
             return values;
-        } else if ("boolean".equals(type)) { // boolean
+        } else if ("boolean".equals(type)) {
+            // boolean
             return Arrays.stream(values)
                     .map(Boolean::parseBoolean)
                     .collect(Collectors.toList());
-        } else if ("integer".equals(type)) { // integer
+        } else if ("integer".equals(type)) {
+            // integer
             return Arrays.stream(values)
                     .mapToInt(Integer::parseInt)
                     .toArray();
-        } else { // double
+        } else {
+            // double
             return Arrays.stream(values)
                     .mapToDouble(Double::parseDouble)
                     .toArray();
@@ -729,16 +734,18 @@ public final class APIParser implements APIParseable {
                     propertie.put("type", prop.type());
                     propertie.put("format", prop.format());
                     propertie.put("description", prop.description());
-
-                    if (prop.required()) { // 为必须参数
+                    // 为必须参数
+                    if (prop.required()) {
                         required.add(prop.value());
                     }
-                    if (prop.optionalValue().length > 0) { // 可选值
+                    // 可选值
+                    if (prop.optionalValue().length > 0) {
                         propertie.put("enum", parseOptionalValue(prop.type(), prop.optionalValue()));
                     }
                     properties.put(prop.value(), propertie);
                 }
-                definitions.put(schema.value(), definition); // 添加新的definition
+                // 添加新的definition
+                definitions.put(schema.value(), definition);
             }
         }
         return definitions;
@@ -768,25 +775,17 @@ public final class APIParser implements APIParseable {
                 || method.getAnnotation(Delete.class) != null;
     }
 
-
-    private List<Class<?>> scanClass() {
+    private List<Class<?>> scanClass() throws ClassNotFoundException {
         List<Class<?>> classes = new ArrayList<>();
         for (String pkg : packageToScan) {
-            String pattern = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + "/" + pkg.replaceAll("\\.", "/") + "/**/*.class";
-            Resource[] resources = null;
-            try {
-                resources = resourcePatternResolver.getResources(pattern);
-            } catch (IOException e) {
-                continue;
-            }
-            for (Resource res : resources) {
-                try {
-                    ClassMetadata meta = metadataReaderFactory.getMetadataReader(res).getClassMetadata();
-                    Class<?> clazz = Class.forName(meta.getClassName());
-                    if (clazz != null) {
-                        classes.add(clazz);
-                    }
-                } catch (IOException | ClassNotFoundException e) {
+            try (ScanResult scanResult =
+                         new ClassGraph()
+                                 .enableClassInfo()
+                                 .enableAnnotationInfo()
+                                 .whitelistPackages(pkg)
+                                 .scan()) {
+                for (ClassInfo classInfo : scanResult.getClassesWithAnnotation(APIs.class.getName())) {
+                    classes.add(Class.forName(classInfo.getName()));
                 }
             }
         }

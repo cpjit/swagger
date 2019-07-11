@@ -2,6 +2,7 @@ package com.cpjit.swagger4j;
 
 import com.cpjit.swagger4j.support.internal.ApiViewWriter;
 import com.cpjit.swagger4j.support.internal.DefaultApiViewWriter;
+import com.cpjit.swagger4j.support.internal.FileTypeMap;
 import com.cpjit.swagger4j.util.ResourceUtil;
 import com.cpjit.swagger4j.util.matcher.AntPathRequestMatcher;
 import com.cpjit.swagger4j.util.matcher.HttpMethod;
@@ -104,6 +105,8 @@ public class SwaggerMappingSupport {
         OutputStream out = null;
         try {
             if (is != null) {
+                String contentType = FileTypeMap.getContentType(staticResource);
+                response.setContentType(contentType);
                 out = response.getOutputStream();
                 IOUtils.copy(is, out);
                 return true;

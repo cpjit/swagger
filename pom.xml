@@ -45,77 +45,78 @@
             scm:git:https://github.com/cpjit/swagger.git
         </developerConnection>
         <url>https://github.com/cpjit/swagger</url>
-        <tag>v2.1.2</tag>
+        <tag>v2.2.0</tag>
     </scm>
+
+    <properties>
+        <spring.mvc.version>4.2.5.RELEASE</spring.mvc.version>
+        <commons.lang3.version>3.5</commons.lang3.version>
+        <commons.collections.version>3.2.2</commons.collections.version>
+        <commons.io.version>2.6</commons.io.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <fastjson.version>1.2.51</fastjson.version>
+        <servlet.version>3.1.0</servlet.version>
+        <struts2.version>2.3.8</struts2.version>
+        <thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
+        <classgraph.version>4.8.43</classgraph.version>
+    </properties>
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.10</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.5</version>
-            <scope>provided</scope>
+            <version>${commons.lang3.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <version>3.2.2</version>
+            <version>${commons.collections.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.5</version>
-            <scope>provided</scope>
+            <version>${commons.io.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
+            <version>${slf4j.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.29</version>
-            <scope>provided</scope>
+            <version>${fastjson.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>provided</scope>
+            <version>${servlet.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts2-core</artifactId>
-            <version>2.3.8</version>
+            <version>${struts2.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>4.2.5.RELEASE</version>
+            <version>${spring.mvc.version}</version>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.freemarker</groupId>
-            <artifactId>freemarker</artifactId>
-            <version>2.3.23</version>
         </dependency>
 
         <dependency>
             <groupId>org.thymeleaf</groupId>
             <artifactId>thymeleaf</artifactId>
-            <version>3.0.11.RELEASE</version>
-            <scope>provided</scope>
+            <version>${thymeleaf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.classgraph</groupId>
+            <artifactId>classgraph</artifactId>
+            <version>${classgraph.version}</version>
         </dependency>
 
     </dependencies>

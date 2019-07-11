@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author yonghuan
  * @since 1.2.0
  */
-class FileTypeMap {
+public class FileTypeMap {
 	private final static Map<String, String> extension2mime = new HashMap<String, String>();
 	static {
 		extension2mime.put("css", "text/css");
