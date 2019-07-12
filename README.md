@@ -20,7 +20,7 @@ JDK1.6+
 <dependency>
 	<groupId>com.cpjit</groupId>
 	<artifactId>swagger4j</artifactId>
-	<version>2.2.0-SNAPSHOT</version>
+	<version>2.2.0</version>
 </dependency>
 ```
 
