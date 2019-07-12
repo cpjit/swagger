@@ -113,7 +113,7 @@ public class DemoController {
 ```
 ## 五. 访问接口文档
 在完成前面的工作之后，您可以部署好您的web项目，然后在浏览器输入以下地址就可以访问接口文档了：
-http://127.0.0.1:8080/您的项目名/api/index
+http://127.0.0.1:8080/您的项目名/doc/index.html
 
 ## 六. 核心API
 ### 1. 注解 @com.cpjit.swagger4j.annotation.APIs

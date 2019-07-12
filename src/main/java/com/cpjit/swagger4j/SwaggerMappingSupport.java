@@ -16,14 +16,16 @@ import org.thymeleaf.context.WebContext;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
-import javax.servlet.*;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -45,7 +47,7 @@ public class SwaggerMappingSupport {
             , "swagger-ui.min.js"
     };
     private final static String STATIC_RESCUE_PATH = "com/cpjit/swagger4j/support/internal/statics";
-    private final static String TEMPLATES_PATH = "templates";
+    private final static String TEMPLATES_PATH = "templates/swagger4j";
     private String contextPath;
     private List<RequestMatcher> requestMatchers;
     private String urlPrefix;
@@ -76,7 +78,7 @@ public class SwaggerMappingSupport {
     }
 
     public boolean doMapping(ServletRequest servletRequest, ServletResponse servletResponse)
-            throws IOException, ServletException {
+            throws IOException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         String uri = request.getRequestURI();
@@ -102,18 +104,15 @@ public class SwaggerMappingSupport {
         String staticResource = String.join("/", STATIC_RESCUE_PATH, relativePath);
         staticResource = staticResource.replaceAll("/{2,}", "/");
         InputStream is = ResourceUtil.getResourceAsStream(SwaggerFilter.class, staticResource);
-        OutputStream out = null;
-        try {
-            if (is != null) {
-                String contentType = FileTypeMap.getContentType(staticResource);
-                response.setContentType(contentType);
-                out = response.getOutputStream();
-                IOUtils.copy(is, out);
-                return true;
-            }
-        } finally {
+        OutputStream out;
+        if (is != null) {
+            String contentType = FileTypeMap.getContentType(staticResource);
+            response.setContentType(contentType);
+            out = response.getOutputStream();
+            IOUtils.copy(is, out);
             IOUtils.closeQuietly(is);
             IOUtils.closeQuietly(out);
+            return true;
         }
 
         // 搜索模板
@@ -155,10 +154,8 @@ public class SwaggerMappingSupport {
         }
     }
 
-    private String resolveBaseUrl(HttpServletRequest request) throws IOException {
-        URL url = new URL(request.getRequestURL().toString());
-        String baseUrl = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + this.urlPrefix;
-        return baseUrl;
+    private String resolveBaseUrl(HttpServletRequest request) {
+        return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + this.urlPrefix;
     }
 
     private boolean unsupportedRequest(HttpServletRequest request) {
