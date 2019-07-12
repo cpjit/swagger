@@ -17,6 +17,7 @@
 package com.cpjit.swagger4j;
 
 import com.alibaba.fastjson.JSONWriter;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.cpjit.swagger4j.annotation.*;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
@@ -287,6 +288,7 @@ public final class APIParser implements APIParseable {
             LOG.debug(String.join("", "生成的文件保存在=>", f.toString()));
         }
         JSONWriter writer = new JSONWriter(Files.newBufferedWriter(f, StandardCharsets.UTF_8));
+        writer.config(SerializerFeature.DisableCircularReferenceDetect, false);
         APIDoc api = (APIDoc) parseAndNotStore();
         writer.writeObject(api);
         writer.flush();

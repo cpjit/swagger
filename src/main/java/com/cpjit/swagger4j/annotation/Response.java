@@ -17,6 +17,7 @@
 package com.cpjit.swagger4j.annotation;
 
 /**
+ * @author yonghuan
  * @since 2.2.0
  */
 public @interface Response {
