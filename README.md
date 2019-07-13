@@ -12,7 +12,7 @@
 [`七. 示例程序`](#七-示例程序)<br />
 
 ## 一. 运行要求
-JDK1.6+
+JDK1.8+
 
 ## 二. 加入依赖JAR文件
 * maven：
@@ -31,11 +31,11 @@ JDK1.6+
 如果您的web项目是基于`strut2`或`SpringMVC`或`servlet`的，您可以在您的web.xml文件中加入如下代码来快速集成`swagger4j`：
 ```xml
    <filter>
-      <filter-name>swaggerServlet</filter-name>
+      <filter-name>swaggerFilter</filter-name>
       <filter-class>com.cpjit.swagger4j.SwaggerFilter</filter-class>
    </filter>
    <filter-mapping>
-      <filter-name>swaggerServlet</filter-name>
+      <filter-name>swaggerFilter</filter-name>
       <url-pattern>/doc/*</url-pattern>
    </filter-mapping>
 ```
