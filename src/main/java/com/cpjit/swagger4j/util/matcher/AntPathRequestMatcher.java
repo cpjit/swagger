@@ -187,12 +187,26 @@ public final class AntPathRequestMatcher
 		return this.matcher.extractUriTemplateVariables(url);
 	}
 
+	/**
+	 * 方法完善
+	 * 
+	 * 功能介绍：适应有项目名称的web项目 http://localhost:8080/XXX/
+	 * 
+	 * 时间：2020-07-30
+	 * 
+	 * 修改人：liuy121086
+	 * 
+	 */
 	private String getRequestPath(HttpServletRequest request) {
 		if (this.urlPathHelper != null) {
 			return this.urlPathHelper.getPathWithinApplication(request);
 		}
 		String url = request.getServletPath();
-
+		
+		// 20200730
+        // 
+        url = request.getContextPath() + request.getServletPath();
+		
 		String pathInfo = request.getPathInfo();
 		if (pathInfo != null) {
 			url = StringUtils.isNotEmpty(url) ? url + pathInfo : pathInfo;
