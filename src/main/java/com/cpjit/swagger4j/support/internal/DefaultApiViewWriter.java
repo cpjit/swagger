@@ -1,7 +1,7 @@
 /*
  * Copyright 2011-2019 CPJIT Group.
- * 
- * 
+ *
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,39 +12,29 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
+ * limitations under the License.
  */
 package com.cpjit.swagger4j.support.internal;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.cpjit.swagger4j.ConfigResolver;
-import com.cpjit.swagger4j.DefaultConfigResolver;
-import com.cpjit.swagger4j.support.Constants;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONWriter;
 import com.cpjit.swagger4j.APIParseable;
 import com.cpjit.swagger4j.APIParser;
-import com.cpjit.swagger4j.support.internal.templates.FreemarkerUtils;
+import com.cpjit.swagger4j.ConfigResolver;
+import com.cpjit.swagger4j.DefaultConfigResolver;
+import com.cpjit.swagger4j.support.Constants;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author yonghuan
@@ -57,43 +47,13 @@ public class DefaultApiViewWriter implements ApiViewWriter {
     private ConfigResolver configResolver = new DefaultConfigResolver();
 
     protected String getTemplateName() {
-        return "api.ftlh";
+        return "";
     }
 
     @Deprecated
     @Override
     public void writeIndex(HttpServletRequest request, HttpServletResponse response, String lang, Properties props)
             throws IOException {
-        String disabled = props.getProperty(Constants.DISABLED, "false");
-        if (Boolean.TRUE.equals(Boolean.valueOf(disabled))) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        Map<String, Object> root = new HashMap<>();
-        root.put("lang", lang);
-        String path = request.getContextPath();
-        String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path + "/";
-        root.put("basePath", basePath);
-        String host = request.getServerName() + ":" + request.getServerPort() + path;
-        String suffix = props.getProperty("suffix");
-        if (StringUtils.isBlank(suffix)) {
-            suffix = "";
-        }
-        root.put("getApisUrl", request.getScheme()+"://" + host + "/api" + suffix);
-        root.put("apiDescription", props.getProperty("apiDescription"));
-        root.put("apiTitle", props.getProperty("apiTitle"));
-        root.put("apiVersion", props.getProperty("apiVersion"));
-        root.put("suffix", suffix);
-        Template template = FreemarkerUtils.getTemplate(getTemplateName());
-        response.setContentType("text/html;charset=utf-8");
-        Writer out = response.getWriter();
-        try {
-            template.process(root, out);
-        } catch (TemplateException e) {
-            throw new IOException(e);
-        }
-        out.flush();
-        out.close();
     }
 
     @Override
