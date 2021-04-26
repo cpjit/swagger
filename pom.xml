@@ -52,7 +52,7 @@
         <spring.mvc.version>4.2.5.RELEASE</spring.mvc.version>
         <commons.lang3.version>3.5</commons.lang3.version>
         <commons.collections.version>3.2.2</commons.collections.version>
-        <commons.io.version>2.6</commons.io.version>
+        <commons.io.version>2.7</commons.io.version>
         <slf4j.version>1.7.25</slf4j.version>
         <fastjson.version>1.2.51</fastjson.version>
         <servlet.version>3.1.0</servlet.version>
